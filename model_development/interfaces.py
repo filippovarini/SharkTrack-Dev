@@ -8,10 +8,11 @@ class Architecture(ABC):
     """
     def __init__(self):
         super().__init__()
-        self.real_world_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
-        self.real_world_annotations_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
-        self.real_world_annotation_fps = 1
-        self.real_world_video_length = 20
+        self.bruvs_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
+        self.greyscale_bruvs_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/greyscale_videos/'
+        self.bruvs_annotations_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/annotations/'
+        self.bruvs_annotation_fps = 1
+        self.bruvs_video_length = 20
 
     @abstractmethod
     def __str__(self):

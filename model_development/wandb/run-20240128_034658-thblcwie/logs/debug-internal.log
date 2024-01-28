@@ -1,0 +1,169 @@
+2024-01-28 03:46:58,314 INFO    StreamThr :3938263 [internal.py:wandb_internal():86] W&B internal server running at pid: 3938263, started at: 2024-01-28 03:46:58.311622
+2024-01-28 03:46:58,316 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: status
+2024-01-28 03:46:58,327 INFO    WriterThread:3938263 [datastore.py:open_for_write():87] open: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/run-thblcwie.wandb
+2024-01-28 03:46:58,330 DEBUG   SenderThread:3938263 [sender.py:send():382] send: header
+2024-01-28 03:46:58,397 DEBUG   SenderThread:3938263 [sender.py:send():382] send: run
+2024-01-28 03:46:58,877 INFO    SenderThread:3938263 [dir_watcher.py:__init__():211] watching files in: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files
+2024-01-28 03:46:58,878 INFO    SenderThread:3938263 [sender.py:_start_run_threads():1136] run started: thblcwie with start time 1706413618.311683
+2024-01-28 03:46:58,923 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: check_version
+2024-01-28 03:46:58,924 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: check_version
+2024-01-28 03:46:59,112 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: run_start
+2024-01-28 03:46:59,113 DEBUG   HandlerThread:3938263 [system_info.py:__init__():27] System info init
+2024-01-28 03:46:59,114 DEBUG   HandlerThread:3938263 [system_info.py:__init__():42] System info init done
+2024-01-28 03:46:59,114 INFO    HandlerThread:3938263 [system_monitor.py:start():194] Starting system monitor
+2024-01-28 03:46:59,114 INFO    SystemMonitor:3938263 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-01-28 03:46:59,115 INFO    HandlerThread:3938263 [system_monitor.py:probe():214] Collecting system info
+2024-01-28 03:46:59,116 INFO    SystemMonitor:3938263 [interfaces.py:start():190] Started cpu monitoring
+2024-01-28 03:46:59,119 INFO    SystemMonitor:3938263 [interfaces.py:start():190] Started disk monitoring
+2024-01-28 03:46:59,120 INFO    SystemMonitor:3938263 [interfaces.py:start():190] Started gpu monitoring
+2024-01-28 03:46:59,121 INFO    SystemMonitor:3938263 [interfaces.py:start():190] Started memory monitoring
+2024-01-28 03:46:59,122 INFO    SystemMonitor:3938263 [interfaces.py:start():190] Started network monitoring
+2024-01-28 03:46:59,142 DEBUG   HandlerThread:3938263 [system_info.py:probe():151] Probing system
+2024-01-28 03:46:59,145 DEBUG   HandlerThread:3938263 [system_info.py:_probe_git():136] Probing git
+2024-01-28 03:46:59,198 DEBUG   HandlerThread:3938263 [system_info.py:_probe_git():144] Probing git done
+2024-01-28 03:46:59,198 DEBUG   HandlerThread:3938263 [system_info.py:probe():199] Probing system done
+2024-01-28 03:46:59,198 DEBUG   HandlerThread:3938263 [system_monitor.py:probe():223] {'os': 'Linux-6.5.0-14-generic-x86_64-with-glibc2.35', 'python': '3.10.12', 'heartbeatAt': '2024-01-28T03:46:59.142905', 'startedAt': '2024-01-28T03:46:58.252621', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '<python with no main file>', 'codePathLocal': None, 'git': {'remote': 'https://github.com/filippovarini/sharktrack_scripts.git', 'commit': 'ff9862b5f756467d06e06ffda5fb8288e889caff'}, 'email': 'filippo.varini20@imperial.ac.uk', 'root': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts', 'host': 'mira03.doc.ic.ac.uk', 'username': 'fv220', 'executable': '/vol/biomedic3/bglocker/ugproj2324/fv220/venvs/default_ml_pytorch/bin/python', 'cpu_count': 8, 'cpu_count_logical': 16, 'cpu_freq': {'current': 1200.0436874999998, 'min': 1200.0, 'max': 4350.0}, 'cpu_freq_per_core': [{'current': 1199.959, 'min': 1200.0, 'max': 4500.0}, {'current': 1200.0, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.72, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.011, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.0, 'min': 1200.0, 'max': 4300.0}, {'current': 1199.284, 'min': 1200.0, 'max': 4500.0}, {'current': 1200.0, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.0, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.391, 'min': 1200.0, 'max': 4500.0}, {'current': 1200.098, 'min': 1200.0, 'max': 4300.0}, {'current': 1199.765, 'min': 1200.0, 'max': 4300.0}, {'current': 1199.98, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.0, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.339, 'min': 1200.0, 'max': 4500.0}, {'current': 1200.672, 'min': 1200.0, 'max': 4300.0}, {'current': 1200.055, 'min': 1200.0, 'max': 4300.0}], 'disk': {'/': {'total': 62.694915771484375, 'used': 36.175838470458984}}, 'gpu': 'NVIDIA GeForce RTX 4090', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 4090', 'memory_total': 25757220864}], 'memory': {'total': 125.48036193847656}}
+2024-01-28 03:46:59,198 INFO    HandlerThread:3938263 [system_monitor.py:probe():224] Finished collecting system info
+2024-01-28 03:46:59,198 INFO    HandlerThread:3938263 [system_monitor.py:probe():227] Publishing system info
+2024-01-28 03:46:59,204 INFO    HandlerThread:3938263 [system_monitor.py:probe():229] Finished publishing system info
+2024-01-28 03:46:59,206 DEBUG   SenderThread:3938263 [sender.py:send():382] send: files
+2024-01-28 03:46:59,206 INFO    SenderThread:3938263 [sender.py:_save_file():1403] saving file wandb-metadata.json with policy now
+2024-01-28 03:46:59,242 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: python_packages
+2024-01-28 03:46:59,242 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: python_packages
+2024-01-28 03:46:59,246 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-28 03:46:59,246 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: stop_status
+2024-01-28 03:46:59,247 DEBUG   SenderThread:3938263 [sender.py:send():382] send: telemetry
+2024-01-28 03:46:59,248 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: stop_status
+2024-01-28 03:46:59,511 DEBUG   SenderThread:3938263 [sender.py:send():382] send: telemetry
+2024-01-28 03:46:59,511 DEBUG   SenderThread:3938263 [sender.py:send():382] send: exit
+2024-01-28 03:46:59,511 INFO    SenderThread:3938263 [sender.py:send_exit():589] handling exit code: 0
+2024-01-28 03:46:59,511 INFO    SenderThread:3938263 [sender.py:send_exit():591] handling runtime: 0
+2024-01-28 03:46:59,514 INFO    SenderThread:3938263 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-28 03:46:59,515 INFO    SenderThread:3938263 [sender.py:send_exit():597] send defer
+2024-01-28 03:46:59,515 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,516 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 0
+2024-01-28 03:46:59,516 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,517 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 0
+2024-01-28 03:46:59,517 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 1
+2024-01-28 03:46:59,517 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,517 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 1
+2024-01-28 03:46:59,519 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,520 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 1
+2024-01-28 03:46:59,520 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 2
+2024-01-28 03:46:59,520 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,521 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 2
+2024-01-28 03:46:59,521 INFO    HandlerThread:3938263 [system_monitor.py:finish():203] Stopping system monitor
+2024-01-28 03:46:59,522 DEBUG   SystemMonitor:3938263 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-01-28 03:46:59,522 INFO    HandlerThread:3938263 [interfaces.py:finish():202] Joined cpu monitor
+2024-01-28 03:46:59,522 DEBUG   SystemMonitor:3938263 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-01-28 03:46:59,522 INFO    HandlerThread:3938263 [interfaces.py:finish():202] Joined disk monitor
+2024-01-28 03:46:59,523 DEBUG   SystemMonitor:3938263 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-01-28 03:46:59,587 INFO    HandlerThread:3938263 [interfaces.py:finish():202] Joined gpu monitor
+2024-01-28 03:46:59,588 INFO    HandlerThread:3938263 [interfaces.py:finish():202] Joined memory monitor
+2024-01-28 03:46:59,588 INFO    HandlerThread:3938263 [interfaces.py:finish():202] Joined network monitor
+2024-01-28 03:46:59,590 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,590 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 2
+2024-01-28 03:46:59,590 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 3
+2024-01-28 03:46:59,591 DEBUG   SenderThread:3938263 [sender.py:send():382] send: stats
+2024-01-28 03:46:59,591 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,592 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 3
+2024-01-28 03:46:59,592 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,595 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 3
+2024-01-28 03:46:59,595 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 4
+2024-01-28 03:46:59,595 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,597 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 4
+2024-01-28 03:46:59,597 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,598 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 4
+2024-01-28 03:46:59,598 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 5
+2024-01-28 03:46:59,599 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,600 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 5
+2024-01-28 03:46:59,600 DEBUG   SenderThread:3938263 [sender.py:send():382] send: summary
+2024-01-28 03:46:59,606 INFO    SenderThread:3938263 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-28 03:46:59,606 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,606 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 5
+2024-01-28 03:46:59,606 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 6
+2024-01-28 03:46:59,607 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,608 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 6
+2024-01-28 03:46:59,608 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,609 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 6
+2024-01-28 03:46:59,615 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: status_report
+2024-01-28 03:46:59,734 INFO    wandb-upload_0:3938263 [upload_job.py:push():131] Uploaded file /tmp/tmphohz_p2kwandb/odeu4clz-wandb-metadata.json
+2024-01-28 03:46:59,776 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 7
+2024-01-28 03:46:59,776 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,776 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 7
+2024-01-28 03:46:59,777 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,779 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 7
+2024-01-28 03:46:59,779 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 8
+2024-01-28 03:46:59,780 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,781 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 8
+2024-01-28 03:46:59,781 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,782 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 8
+2024-01-28 03:46:59,783 INFO    SenderThread:3938263 [job_builder.py:build():296] Attempting to build job artifact
+2024-01-28 03:46:59,784 INFO    SenderThread:3938263 [job_builder.py:_get_source_type():426] is repo sourced job
+2024-01-28 03:46:59,785 INFO    SenderThread:3938263 [job_builder.py:_get_program_relpath():444] run is notebook based run
+2024-01-28 03:46:59,785 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 9
+2024-01-28 03:46:59,785 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,786 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 9
+2024-01-28 03:46:59,787 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,788 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 9
+2024-01-28 03:46:59,788 INFO    SenderThread:3938263 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-01-28 03:46:59,884 INFO    SenderThread:3938263 [dir_watcher.py:_on_file_modified():288] file/dir modified: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/config.yaml
+2024-01-28 03:46:59,885 INFO    SenderThread:3938263 [dir_watcher.py:_on_file_created():271] file/dir created: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/requirements.txt
+2024-01-28 03:46:59,885 INFO    SenderThread:3938263 [dir_watcher.py:_on_file_created():271] file/dir created: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/wandb-summary.json
+2024-01-28 03:46:59,887 INFO    SenderThread:3938263 [dir_watcher.py:_on_file_created():271] file/dir created: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/wandb-metadata.json
+2024-01-28 03:46:59,888 INFO    SenderThread:3938263 [dir_watcher.py:finish():388] scan: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files
+2024-01-28 03:46:59,890 INFO    SenderThread:3938263 [dir_watcher.py:finish():402] scan save: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/wandb-summary.json wandb-summary.json
+2024-01-28 03:46:59,891 INFO    SenderThread:3938263 [dir_watcher.py:finish():402] scan save: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/config.yaml config.yaml
+2024-01-28 03:46:59,896 INFO    SenderThread:3938263 [dir_watcher.py:finish():402] scan save: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/wandb-metadata.json wandb-metadata.json
+2024-01-28 03:46:59,896 INFO    SenderThread:3938263 [dir_watcher.py:finish():402] scan save: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/requirements.txt requirements.txt
+2024-01-28 03:46:59,902 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 10
+2024-01-28 03:46:59,903 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:46:59,908 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 10
+2024-01-28 03:46:59,909 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:46:59,909 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 10
+2024-01-28 03:46:59,909 INFO    SenderThread:3938263 [file_pusher.py:finish():175] shutting down file pusher
+2024-01-28 03:47:00,218 INFO    wandb-upload_0:3938263 [upload_job.py:push():131] Uploaded file /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/wandb-summary.json
+2024-01-28 03:47:00,251 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-28 03:47:00,251 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: poll_exit
+2024-01-28 03:47:00,328 INFO    wandb-upload_1:3938263 [upload_job.py:push():131] Uploaded file /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/config.yaml
+2024-01-28 03:47:00,432 INFO    wandb-upload_2:3938263 [upload_job.py:push():131] Uploaded file /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/files/requirements.txt
+2024-01-28 03:47:00,633 INFO    Thread-84 (_thread_body):3938263 [sender.py:transition_state():617] send defer: 11
+2024-01-28 03:47:00,634 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:47:00,635 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 11
+2024-01-28 03:47:00,635 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:47:00,636 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 11
+2024-01-28 03:47:00,637 INFO    SenderThread:3938263 [file_pusher.py:join():181] waiting for file pusher
+2024-01-28 03:47:00,637 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 12
+2024-01-28 03:47:00,637 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:47:00,638 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 12
+2024-01-28 03:47:00,639 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:47:00,640 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 12
+2024-01-28 03:47:00,640 INFO    SenderThread:3938263 [file_stream.py:finish():595] file stream finish called
+2024-01-28 03:47:01,150 INFO    SenderThread:3938263 [file_stream.py:finish():599] file stream finish is done
+2024-01-28 03:47:01,151 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 13
+2024-01-28 03:47:01,151 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:47:01,152 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 13
+2024-01-28 03:47:01,153 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:47:01,154 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 13
+2024-01-28 03:47:01,154 INFO    SenderThread:3938263 [sender.py:transition_state():617] send defer: 14
+2024-01-28 03:47:01,155 DEBUG   SenderThread:3938263 [sender.py:send():382] send: final
+2024-01-28 03:47:01,155 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: defer
+2024-01-28 03:47:01,155 DEBUG   SenderThread:3938263 [sender.py:send():382] send: footer
+2024-01-28 03:47:01,156 INFO    HandlerThread:3938263 [handler.py:handle_request_defer():172] handle defer: 14
+2024-01-28 03:47:01,157 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: defer
+2024-01-28 03:47:01,159 INFO    SenderThread:3938263 [sender.py:send_request_defer():613] handle sender defer: 14
+2024-01-28 03:47:01,160 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-28 03:47:01,161 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: poll_exit
+2024-01-28 03:47:01,170 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-28 03:47:01,172 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: server_info
+2024-01-28 03:47:01,173 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: server_info
+2024-01-28 03:47:01,213 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: get_summary
+2024-01-28 03:47:01,214 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: sampled_history
+2024-01-28 03:47:01,221 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: job_info
+2024-01-28 03:47:01,304 DEBUG   SenderThread:3938263 [sender.py:send_request():409] send_request: job_info
+2024-01-28 03:47:01,306 DEBUG   HandlerThread:3938263 [handler.py:handle_request():146] handle_request: shutdown
+2024-01-28 03:47:01,306 INFO    HandlerThread:3938263 [handler.py:finish():869] shutting down handler
+2024-01-28 03:47:02,223 INFO    WriterThread:3938263 [datastore.py:close():296] close: /vol/biomedic3/bglocker/ugproj2324/fv220/dev/scripts/model_development/wandb/run-20240128_034658-thblcwie/run-thblcwie.wandb
+2024-01-28 03:47:02,305 INFO    SenderThread:3938263 [sender.py:finish():1572] shutting down sender
+2024-01-28 03:47:02,305 INFO    SenderThread:3938263 [file_pusher.py:finish():175] shutting down file pusher
+2024-01-28 03:47:02,305 INFO    SenderThread:3938263 [file_pusher.py:join():181] waiting for file pusher

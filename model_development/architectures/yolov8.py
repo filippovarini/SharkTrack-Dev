@@ -7,26 +7,19 @@ import json
 import os
 
 class YoloV8(Architecture):
-  def __init__(self, model_name, model_size, tracker, **kwargs):
-    self.model_name = model_name
+  def __init__(self, hyperparameters, tracker):
+    super().__init__()
+    self.hyperparameters = hyperparameters
     self.tracker = tracker
-    self.conf_treshold = kwargs['conf_treshold']
-    self.iou_association_threshold = kwargs['iou_association_threshold']
-
-    # If model is already trained, it would be in trained_models. Otherwise, train it from scratch.
-    trained_models = None
-    with open("../trained_models.json", "r") as file:
-      trained_models = json.load(file)
-    assert trained_models is not None
-    if model_name in trained_models:
-      path = trained_models[model_name]
-      self.model = YOLO(self.path)
-
+    
+    if self.hyperparameters["pretrained"]:
+      self.model = YOLO(self.hyperparameters['model_path'])
     else:
-      assert model_size in ["n", "s", "m", "l", "x"]
-      self.model = YOLO(f'yolov8{model_size}.pt')
+      # TODO: set model path
+      assert self.hyperparameters["model_size"] in ["n", "s", "m", "l", "x"]
+      self.model = YOLO(f'yolov8{self.hyperparameters["model_size"]}.pt')
 
-    pass
+    print(f"Initialised Model {self.hyperparameters['model_name']} ")
 
   def __str__(self):
     return str(self.model)
@@ -34,6 +27,7 @@ class YoloV8(Architecture):
   def train(self, arg1, arg2):
     """ Train the model using the dataloader provided, saves the model and updates
     the trained_models.json. """
+    # TODO: allow for hyperparamters
     pass
 
   def evaluate(self):
@@ -42,10 +36,12 @@ class YoloV8(Architecture):
     2. Evaluate object detection model using the out-of-distribution evaluation dataset
     3. Evaluate tracker model using the evaluation dataset
     """
-    videos = os.listdir(self.real_world_videos_folder)
+    bruvs_video_folder = self.bruvs_videos_folder if not self.hyperparameters['greyscale'] else self.greyscale_bruvs_videos_folder
+    videos = os.listdir(bruvs_video_folder)
     assert all([video.endswith('.mp4') for video in videos])
-    annotations = os.listdir(self.real_world_annotations_folder)
+    annotations = os.listdir(self.bruvs_annotations_folder)
     video_names = video_names = [vid[:-4] for vid in videos]
+    print(annotations, video_names)
     assert len(videos) == len(annotations) and all([vid in annotations for vid in video_names])
     
     # 3. Evaluate tracker
@@ -57,15 +53,18 @@ class YoloV8(Architecture):
 
       for video in video_names:
         print(f'Evaluating {video}')
-        video_path = self.real_world_videos_folder + video
-        annotations_path = self.real_world_annotations_folder + video[:-4] + '.csv'
+        video_path = bruvs_video_folder + video
+        annotations_path = self.bruvs_annotations_folder + video[:-4] + '.csv'
         annotations = pd.read_csv(annotations_path)
 
         results = self.track(video_path)
 
+        # Extract and store annotations for investigation
         extracted_pred_results = self._extract_tracks(results)
+        aligned_annotations = utils.align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, self.bruvs_video_length)
+        aligned_annotations_path = self.hyperparameters['annotation_path']
+        aligned_annotations.to_csv(aligned_annotations_path, index=False)
 
-        aligned_annotations = utils.align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, self.real_world_video_length)
         mota, motp, idf1, frame_avg_motp = utils.evaluate_tracking(aligned_annotations, self.iou_association_threshold)
         print(f'{video} - MOTA: {round(mota, 2)}, MOTP: {round(motp, 2)}, IDF1: {round(idf1, 2)}')
         motas.append(mota)
@@ -87,7 +86,9 @@ class YoloV8(Architecture):
     results = self.model.track(
       source=video_path,
       persist=True,
-      conf=self.conf_treshold,
+      conf=self.hyperparameters['conf_threshold'],
+      iou=self.hyperparameters['iou_threshold'],
+      imgsz=self.hyperparameters['img_size'],
       tracker=str(self.tracker)
     )
     return results
