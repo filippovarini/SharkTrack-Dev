@@ -42,7 +42,7 @@ class YoloV8(Architecture):
     annotations = os.listdir(self.bruvs_annotations_folder)
     video_names = video_names = [vid[:-4] for vid in videos]
     print(annotations, video_names)
-    assert len(videos) == len(annotations) and all([vid in annotations for vid in video_names])
+    assert len(videos) == len(annotations) and all([f'{vid}.csv' in annotations for vid in video_names])
     
     # 3. Evaluate tracker
     if self.tracker is not None:
