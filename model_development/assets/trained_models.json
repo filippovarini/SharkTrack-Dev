@@ -1,6 +1,7 @@
 {
   "yoloV8-medium-mvd2": {
     "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt",
+    "annotation_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/shark_locator_tests/runs/detect/yolov8m_mvd2/annotations.csv",
     "architecture": "yolov8",
     "data": "MVDv2",
     "epochs": 50,
@@ -9,7 +10,7 @@
     "train_mins": 102,
     "device": "Tesla T4",
     "lr": 0.01,
-    "greyscale": true,
+    "greyscale": false,
     "model_size": "m"
   }
 }

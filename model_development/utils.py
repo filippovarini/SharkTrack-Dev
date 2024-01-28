@@ -1,3 +1,5 @@
+import torch
+
 def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
     """
     Correctly aligns ground truth annotations with predicted data from an object tracking model.
@@ -20,11 +22,11 @@ def align_annotations_with_predictions_dict_corrected(annotations, track_predict
 
     # Initialize the output list
     results = {
-        'gt_bbox_xyxys': [],
-        'gt_track_ids': [],
-        'pred_bbox_xyxys': [],
-        'pred_confidences': [],
-        'pred_track_ids': []
+        "gt_bbox_xyxys": [],
+        "gt_track_ids": [],
+        "pred_bbox_xyxys": [],
+        "pred_confidences": [],
+        "pred_track_ids": []
     }
 
 
@@ -41,23 +43,23 @@ def align_annotations_with_predictions_dict_corrected(annotations, track_predict
 
         ### GET GT FRAME TRACKS
         # Filter annotations dataframe that has frame_id = frame_num
-        frame_annotations = annotations[annotations['frame_id'] == frame_num]
+        frame_annotations = annotations[annotations["frame_id"] == frame_num]
 
         # Extract ground truth data for the corresponding frame
-        gt_track_ids = frame_annotations['track_id'].values.tolist()
-        gt_bbox_xyxys = frame_annotations[['xmin', 'ymin', 'xmax', 'ymax']].values.tolist()
+        gt_track_ids = frame_annotations["track_id"].values.tolist()
+        gt_bbox_xyxys = frame_annotations[["xmin", "ymin", "xmax", "ymax"]].values.tolist()
 
-        results['gt_bbox_xyxys'].append(gt_bbox_xyxys)
-        results['gt_track_ids'].append(gt_track_ids)
-        results['pred_bbox_xyxys'].append(pred_bbox_xyxys)
-        results['pred_confidences'].append(pred_confidences)
-        results['pred_track_ids'].append(pred_track_ids)
+        results["gt_bbox_xyxys"].append(gt_bbox_xyxys)
+        results["gt_track_ids"].append(gt_track_ids)
+        results["pred_bbox_xyxys"].append(pred_bbox_xyxys)
+        results["pred_confidences"].append(pred_confidences)
+        results["pred_track_ids"].append(pred_track_ids)
 
-    assert len(results['gt_bbox_xyxys']) == tot_annotation_frames
-    assert len(results['gt_track_ids']) == tot_annotation_frames
-    assert len(results['pred_bbox_xyxys']) == tot_annotation_frames
-    assert len(results['pred_confidences']) == tot_annotation_frames
-    assert len(results['pred_track_ids']) == tot_annotation_frames
+    assert len(results["gt_bbox_xyxys"]) == tot_annotation_frames
+    assert len(results["gt_track_ids"]) == tot_annotation_frames
+    assert len(results["pred_bbox_xyxys"]) == tot_annotation_frames
+    assert len(results["pred_confidences"]) == tot_annotation_frames
+    assert len(results["pred_track_ids"]) == tot_annotation_frames
 
     return results
 
@@ -98,13 +100,13 @@ def evaluate_tracking(results, S_TRESH):
     id_mapping = {}  # Maps predicted IDs to ground truth IDs
     id_switched = {} # Maps ground truth IDs to predicted IDs before id switch
 
-    tot_frames = len(results['gt_bbox_xyxys'])
+    tot_frames = len(results["gt_bbox_xyxys"])
 
     for frame_idx in range(tot_frames):
-        gt_bboxes = results['gt_bbox_xyxys'][frame_idx]
-        gt_ids = results['gt_track_ids'][frame_idx]
-        pred_bboxes = results['pred_bbox_xyxys'][frame_idx]
-        pred_ids = results['pred_track_ids'][frame_idx]
+        gt_bboxes = results["gt_bbox_xyxys"][frame_idx]
+        gt_ids = results["gt_track_ids"][frame_idx]
+        pred_bboxes = results["pred_bbox_xyxys"][frame_idx]
+        pred_ids = results["pred_track_ids"][frame_idx]
         total_ground_truth += len(gt_bboxes)
         frame_tot_iou = 0
 
@@ -161,3 +163,12 @@ def evaluate_tracking(results, S_TRESH):
     idf1 = idtp / (idtp + 0.5 * idfn + 0.5 * idfp)
 
     return mota, motp, idf1, frame_avg_motp
+
+def get_torch_device():
+    """
+    Returns the device to be used for training and inference.
+    """
+    if torch.cuda.is_available():
+        return torch.cuda.get_device_name(0)
+    else:
+        return "CPU"

@@ -1,8 +1,10 @@
 from interfaces import Architecture
 from ultralytics import YOLO
-import utils
 import pandas as pd
 import numpy as np
+import utils
+import torch
+import time
 import json
 import os
 
@@ -41,10 +43,10 @@ class YoloV8(Architecture):
     assert all([video.endswith('.mp4') for video in videos])
     annotations = os.listdir(self.bruvs_annotations_folder)
     video_names = video_names = [vid[:-4] for vid in videos]
-    print(annotations, video_names)
     assert len(videos) == len(annotations) and all([f'{vid}.csv' in annotations for vid in video_names])
     
     # 3. Evaluate tracker
+    track_start_time = time.time()
     if self.tracker is not None:
       # macro average
       motas = []
@@ -53,8 +55,8 @@ class YoloV8(Architecture):
 
       for video in video_names:
         print(f'Evaluating {video}')
-        video_path = bruvs_video_folder + video
-        annotations_path = self.bruvs_annotations_folder + video[:-4] + '.csv'
+        video_path = bruvs_video_folder + video + '.mp4'
+        annotations_path = self.bruvs_annotations_folder + video + '.csv'
         annotations = pd.read_csv(annotations_path)
 
         results = self.track(video_path)
@@ -62,10 +64,11 @@ class YoloV8(Architecture):
         # Extract and store annotations for investigation
         extracted_pred_results = self._extract_tracks(results)
         aligned_annotations = utils.align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, self.bruvs_video_length)
+        aligned_annotations_df = pd.DataFrame(aligned_annotations)
         aligned_annotations_path = self.hyperparameters['annotation_path']
-        aligned_annotations.to_csv(aligned_annotations_path, index=False)
+        aligned_annotations_df.to_csv(aligned_annotations_path, index=False)
 
-        mota, motp, idf1, frame_avg_motp = utils.evaluate_tracking(aligned_annotations, self.iou_association_threshold)
+        mota, motp, idf1, frame_avg_motp = utils.evaluate_tracking(aligned_annotations, self.hyperparameters['iou_association_threshold'])
         print(f'{video} - MOTA: {round(mota, 2)}, MOTP: {round(motp, 2)}, IDF1: {round(idf1, 2)}')
         motas.append(mota)
         motps.append(motp)
@@ -75,25 +78,27 @@ class YoloV8(Architecture):
       macro_motp = round(np.mean(motps), 2)
       macro_idf1 = round(np.mean(idf1s), 2)
       # TODO: construct average performance graph for each video! (or image of 6 combined)
-    
-    return macro_mota, macro_motp, macro_idf1
+
+    track_end_time = time.time()
+    track_time = round((track_end_time - track_start_time) / 60, 2)
+
+    return macro_mota, macro_motp, macro_idf1, track_time, utils.get_torch_device()
 
   def track(self, video_path):
     assert self.tracker is not None
-    assert self.conf_treshold is not None and self.conf_treshold >= 0 and self.conf_treshold <= 1
     assert str(self.tracker) in ['botsort.yaml', 'bytetrack.yaml']
 
     results = self.model.track(
       source=video_path,
       persist=True,
       conf=self.hyperparameters['conf_threshold'],
-      iou=self.hyperparameters['iou_threshold'],
+      iou=self.hyperparameters['iou_association_threshold'],
       imgsz=self.hyperparameters['img_size'],
       tracker=str(self.tracker)
     )
     return results
     
-  def _extract_tracks(results):
+  def _extract_tracks(self, results):
     """
     Convert Yolo-style results to list of tracks to be matched with annotation format
     :param results: List of predictions in the format results.bbox = [bbox_xyxy], [confidences], [track_ids]
