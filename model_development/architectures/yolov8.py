@@ -6,7 +6,7 @@ import numpy as np
 import json
 import os
 
-class YoloV8(interfaces.Architecture):
+class YoloV8(Architecture):
   def __init__(self, model_name, model_size, tracker, **kwargs):
     self.model_name = model_name
     self.tracker = tracker
@@ -75,6 +75,7 @@ class YoloV8(interfaces.Architecture):
       macro_mota = round(np.mean(motas), 2)
       macro_motp = round(np.mean(motps), 2)
       macro_idf1 = round(np.mean(idf1s), 2)
+      # TODO: construct average performance graph for each video! (or image of 6 combined)
     
     return macro_mota, macro_motp, macro_idf1
 
