@@ -10,4 +10,3 @@ The workflow summarised above consists in:
 4. Storing the model and evaluation annotations in a folder
 5. **Investigation** of the results, detection of failure cases and model improvement
 6. **Iterating** over steps 1-5
-

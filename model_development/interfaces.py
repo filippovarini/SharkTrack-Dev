@@ -1,6 +1,18 @@
 from abc import ABC, abstractmethod
 
-class Model(ABC):
+class Architecture(ABC):
+    """
+    Abstract class for architecture, which takes configuration parameters, dataset
+    and tracker and trains the model, returning a new model.
+    If the model is already present, it loads the model and returns it.
+    """
+    def __init__(self):
+        super().__init__()
+        self.real_world_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
+        self.real_world_annotations_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
+        self.real_world_annotation_fps = 1
+        self.real_world_video_length = 20
+
     @abstractmethod
     def __str__(self):
         """ Prints the model architecture"""
@@ -16,6 +28,7 @@ class Model(ABC):
     def evaluate(self, tracker):
         """ Evaluates two models using the evaluation dataset:
         1. Object detection model, returning mAP@50 and F1
+            this should be against val dataset and out-of-distribution val dataset
         2. If tracker=True, returns the MOTA, MOTP and IDF1 of the tracker"""
         pass
     
