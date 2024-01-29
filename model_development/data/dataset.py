@@ -23,7 +23,7 @@ class CustomDataset(Dataset):
 
         root_dir: Path to the 'datasets/' folder.
         subfolder_sampling_ratios: Dict[str, float] where the key is the name of the subfolder and the value is the percentage
-          of images to sample. If a subfloder is not in the Dict, all images in that subfolder are used. 
+          of images to sample.
         augmentations: List of albumentations augmentations to apply.
         """
         self.subfolders = os.listdir(root_dir)
@@ -47,9 +47,8 @@ class CustomDataset(Dataset):
             folder_path = os.path.join(self.root_dir, folder)
             original_size = len(os.listdir(folder_path))
             dataset_size[folder] = original_size
-            if folder in self.subfolder_sampling_ratios:
-                sampling_ratio = self.subfolder_sampling_ratios[folder]
-                dataset_size[folder] = int(original_size * sampling_ratio)
+            sampling_ratio = self.subfolder_sampling_ratios[folder]
+            dataset_size[folder] = int(original_size * sampling_ratio)
             print(f'{folder}: original size: {original_size}, samples: {dataset_size[folder]} images')
         return dataset_size
     
@@ -64,15 +63,6 @@ class CustomDataset(Dataset):
     def _file_is_image(self, file):
         return file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg')
     
-    def _sample_filenames(self, filenames, folder):
-        """
-        Sample filenames from a list of filenames based on the sampling ratio
-        """
-        sampling_ratio = self.subfolder_sampling_ratios[folder]
-        num_files = len(filenames)
-        num_files_to_sample = int(num_files * sampling_ratio)
-        sampled_filenames = np.random.choice(filenames, num_files_to_sample, replace=False)
-        return sampled_filenames
     
     def _sample_images(self, image_paths, annotations_df, folder):
         """
@@ -156,12 +146,9 @@ class CustomDataset(Dataset):
         
         bboxes = image_processor.read_bboxes(image_id)
 
-        # Apply augmentations
-        # TODO: put probability 50% if just 1 augmentation, 30% if 2 augmentations, etc.
         if self.augmentations:
             self._augment(image, bboxes)
             aug_img, aug_bboxes = self.augmentations(image=image)
-            self._update_annotation_bbox(image_id, aug_bboxes)
+            image, bboxes = aug_img, aug_bboxes
 
-
-        return image, annotation
+        return image, bboxes

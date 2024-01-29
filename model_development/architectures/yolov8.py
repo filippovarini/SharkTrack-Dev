@@ -1,5 +1,6 @@
 from interfaces import Architecture
-from ultralytics import YOLO
+from torch.utils.data import DataLoader
+from ultralytics import YOLO, Trainer
 import pandas as pd
 import numpy as np
 import utils
@@ -26,10 +27,21 @@ class YoloV8(Architecture):
   def __str__(self):
     return str(self.model)
 
-  def train(self, arg1, arg2):
-    """ Train the model using the dataloader provided, saves the model and updates
-    the trained_models.json. """
-    # TODO: allow for hyperparamters
+  def train(self, dataset):
+    """ 
+    Train the model using the dataset provided
+
+    :param dataset: Dataset object containing the training data, extending torch.utils.data.Dataset
+    """
+    data_loader = DataLoader(dataset, batch_size=self.hyperparameters['batch_size'], shuffle=True)
+    trainer = Trainer(self.model)
+    results = trainer.train(
+      data_loader,
+      epochs=self.hyperparameters['epochs'],
+      imgsz=self.hyperparameters['img_size'],
+      verbose=True,
+      patience=self.hyperparameters['patience'],
+    )
     pass
 
   def evaluate(self):
