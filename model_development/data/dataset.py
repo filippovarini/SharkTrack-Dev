@@ -14,7 +14,7 @@ MAX_CROP = 150
 
 
 class CustomDataset(Dataset):
-    def __init__(self, root_dir, subfolder_sampling_ratios, augmentations=None):
+    def __init__(self, root_dir, subfolder_sampling_ratios, augmentations=[]):
         """
         Note:
         - Augmentations don't change the number of images in the dataset, as they are applied on the fly.
@@ -28,9 +28,11 @@ class CustomDataset(Dataset):
         """
         self.subfolders = os.listdir(root_dir)
 
-        # Assert the root_dir contains only directories and no files
         assert all([os.path.isdir(os.path.join(root_dir, folder)) for folder in self.subfolders]), \
             'root_dir should contain only directories'
+        assert len(subfolder_sampling_ratios) == len(self.subfolders) and \
+            all([subfolder in subfolder_sampling_ratios.keys() for subfolder in self.subfolders]), \
+            'subfolder_sampling_ratios should have the same keys as the subfolders in root_dir'
         assert [aug in ALLOWED_AUGMENTATIONS for aug in augmentations], \
             f'Augmentations should be one of {ALLOWED_AUGMENTATIONS}'
         
@@ -132,6 +134,9 @@ class CustomDataset(Dataset):
         return dataset_length
 
     def __getitem__(self, idx):
+        """
+        Returns image and pascal-voc format bboxes
+        """
         image_path = self.image_paths[idx]
 
         image_folder = os.path.dirname(image_path)

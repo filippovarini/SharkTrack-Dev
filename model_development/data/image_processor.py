@@ -12,20 +12,23 @@ class ImageProcessor:
         assert 'annotation.csv' in os.listdir(image_folder), 'annotation.csv not found in image_folder'
         self.annotations_df = pd.read_csv(os.path.join(image_folder, 'annotation.csv'))
 
+    @staticmethod
+    def normalise_bbox(bboxes, img):
+        img_h, img_w, _ = img.shape
+        norm_factors = np.array([img_w, img_h, img_w, img_h])
+        normalised_bboxes = [bbox / norm_factors for bbox in bboxes]
+        return normalised_bboxes
+
+    @staticmethod
+    def denormalise_bbox(bboxes, img):
+        img_h, img_w, _ = img.shape
+        denorm_factors = np.array([img_w, img_h, img_w, img_h])
+        denormalised_bboxes = [bbox * denorm_factors for bbox in bboxes]
+        return denormalised_bboxes
+    
     def read_annotations(self, img_id):
         return self.annotations_df.loc[self.annotations_df.Filename == img_id, 'Family Genus Species'.split()].values
 
-    def normalise_bbox(self, bbox, img_id, img=None):
-        if img is None:
-            img = self.read_img(img_id)
-        img_h, img_w, _ = img.shape
-        return bbox / np.array([img_w, img_h, img_w, img_h])
-
-    def denormalise_bbox(self, bbox, img_id, img=None):
-        if img is None:
-            img = self.read_img(img_id)
-        img_h, img_w, _ = img.shape
-        return bbox * np.array([img_w, img_h, img_w, img_h])
 
     def draw_rect(self, img, bboxes, color=(255, 0, 0)):
         img = img.copy()
