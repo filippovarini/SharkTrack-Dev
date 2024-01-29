@@ -80,40 +80,31 @@ class CustomDataset(Dataset):
         In this case, sample the images and adjust annotations accordingly, by 
         only having annotations for the sampled images.
         """
-        # You can do this by using the Filename column, which is the same filename of the images
-        # in the subfolder
         filenames = [os.path.basename(image_path) for image_path in image_paths]
-        sampled_filenames = self._sample_filenames(filenames, folder)
+
+        num_files = len(filenames)
+        sampling_ratio = self.subfolder_sampling_ratios[folder]
+        num_files_to_sample = int(num_files * sampling_ratio)
+
+        sampled_filenames = np.random.choice(filenames, num_files_to_sample, replace=False)
         sampled_image_paths = [os.path.join(self.root_dir, folder, filename) for filename in sampled_filenames]
-        sampled_annotations_df = annotations_df[annotations_df['Filename'].isin(sampled_filenames)]
-        return sampled_image_paths, sampled_annotations_df
+        return sampled_image_paths
 
     def _load_paths(self):
         image_paths = []
-        annotations = []
         
         for folder in self.subfolders:
             folder_path = os.path.join(self.root_dir, folder)
             image_paths += [os.path.join(folder_path, file) for file in os.listdir(folder_path) if self._file_is_image(file)]
 
-            # Assuming annotations are in a CSV file in the same folder
-            annotations_csv = os.path.join(folder_path, 'annotations.csv')
-            annotations_df = pd.read_csv(annotations_csv)
-            assert all([col in annotations_df.columns for col in REQUIRED_ANNOTATION_COLS]), \
-                f'Annotations CSV should have the following columns: {REQUIRED_ANNOTATION_COLS}'
-            
-            # Filter annotations and image_paths based on the sampling ratio
+            # Filter image_paths based on the sampling ratio
             if folder in self.subfolder_sampling_ratios:
-                image_paths, annotations_df = self._sample_images(image_paths, annotations_df, folder)
+                image_paths = self._sample_images(image_paths, folder)
 
-            assert len(image_paths) == len(annotations_df), \
-                f'Number of images and annotations should be the same. Got {len(image_paths)} images and {len(annotations_df)} annotations.'
             assert len(image_paths) == self.dataset_size[folder], \
                 f'Number of images should be equal to the dataset size. Got {len(image_paths)} images and dataset size {self.dataset_size[folder]}.' 
 
-            annotations.append(annotations_df)
-
-        return image_paths, pd.concat(annotations)
+        return image_paths
     
     def _augment(self, img, bboxes):
         """
