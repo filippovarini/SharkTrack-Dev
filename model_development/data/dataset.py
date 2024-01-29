@@ -63,7 +63,6 @@ class CustomDataset(Dataset):
     def _file_is_image(self, file):
         return file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg')
     
-    
     def _sample_images(self, image_paths, annotations_df, folder):
         """
         User can specify the percentage of images to sample from each subfolder.
@@ -87,9 +86,7 @@ class CustomDataset(Dataset):
             folder_path = os.path.join(self.root_dir, folder)
             image_paths += [os.path.join(folder_path, file) for file in os.listdir(folder_path) if self._file_is_image(file)]
 
-            # Filter image_paths based on the sampling ratio
-            if folder in self.subfolder_sampling_ratios:
-                image_paths = self._sample_images(image_paths, folder)
+            image_paths = self._sample_images(image_paths, folder)
 
             assert len(image_paths) == self.dataset_size[folder], \
                 f'Number of images should be equal to the dataset size. Got {len(image_paths)} images and dataset size {self.dataset_size[folder]}.' 
