@@ -48,15 +48,3 @@ class Tracker(ABC):
     @abstractmethod
     def __str__(self):
         pass
-    
-
-class Dataset(ABC):
-    @abstractmethod
-    def getinfo(self):
-        """ Returns length of the dataset and number of classes, size of images, etc."""
-        pass
-    
-    @abstractmethod
-    def __str__(self):
-        """ Prints sample of images in the dataset """
-        pass
