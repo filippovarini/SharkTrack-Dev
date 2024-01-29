@@ -1,7 +1,7 @@
 from ultralytics.models.yolo.detect import DetectionTrainer
 from data.dataloader_builder import DataLoaderBuilder
 from data.yolo_dataset import YoloDataset
-from ultralytics import YOLO, Trainer
+from ultralytics import YOLO
 from interfaces import Architecture
 from types import SimpleNamespace
 import pandas as pd
@@ -87,8 +87,13 @@ class YoloV8(Architecture):
     trainer.args.lr0 = self.hyperparameters['learning_rate'],
     trainer.args.lr1 = self.hyperparameters['learning_rate'],
     
-    results = trainer.train()
+    start_time = time.time()
+    trainer.train()
+    end_time = time.time()
+    train_time = round((end_time - start_time) / 60, 2)
     self.model = trainer.best
+
+    return train_time, utils.get_torch_device()
 
   def evaluate(self):
     """

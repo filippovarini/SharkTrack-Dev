@@ -1,6 +1,6 @@
-from image_processor import ImageProcessor
+from data.advanced_augmentations import apply_custom_cutout, bbox_only_rotate
+from data.image_processor import ImageProcessor
 from torch.utils.data import Dataset
-from advanced_augmentations import apply_custom_cutout, apply_custom_rotate
 import albumentations as A
 import pandas as pd
 import numpy as np
@@ -123,7 +123,7 @@ class CustomDataset(Dataset):
             assert any([coord > 1 for bbox in aug_bboxes for coord in bbox]), 'Bbox coordinates must not be relative'
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
         if 'Bbox-rotate' in self.augmentations and np.random.rand() < p:
-            aug_img, aug_bboxes = apply_custom_rotate(aug_img, bboxes=aug_bboxes)
+            aug_img, aug_bboxes = bbox_only_rotate(aug_img, bboxes=aug_bboxes)
         
         return aug_img, aug_bboxes
         

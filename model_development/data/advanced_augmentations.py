@@ -1,5 +1,5 @@
 import albumentations as A
-from image_processor import ImageProcessor
+from data.image_processor import ImageProcessor
 import numpy as np
 import cv2
 
