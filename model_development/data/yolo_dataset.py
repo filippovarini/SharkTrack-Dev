@@ -1,5 +1,6 @@
 # Subclass of data.Dataset, just to wrap the __getitem__ method to return YOLO format!
 from data.dataset import Dataset
+from data.image_processor import ImageProcessor
 
 class YoloDataset(Dataset):
   def __init__(self, root_dir, subfolder_sampling_ratios, augmentations=[]):
@@ -22,6 +23,7 @@ class YoloDataset(Dataset):
     # Use the parent class's __getitem__ method to get the image and annotations
     # and update the annotations to be in YOLO format
     image, bboxes = super().__getitem__(idx)
-    yolo_bboxes = self._to_yolo(bboxes)
+    normalised_bboxes = ImageProcessor.normalise_bbox(bboxes, image)
+    yolo_bboxes = self._to_yolo(normalised_bboxes)
     return image, yolo_bboxes
 
