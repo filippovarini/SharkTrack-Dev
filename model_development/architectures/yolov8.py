@@ -1,6 +1,9 @@
-from interfaces import Architecture
-from torch.utils.data import DataLoader
+from ultralytics.models.yolo.detect import DetectionTrainer
+from data.dataloader_builder import DataLoaderBuilder
+from data.yolo_dataset import YoloDataset
 from ultralytics import YOLO, Trainer
+from interfaces import Architecture
+from types import SimpleNamespace
 import pandas as pd
 import numpy as np
 import utils
@@ -8,6 +11,30 @@ import torch
 import time
 import json
 import os
+
+
+class CustomDetectionTrainer(DetectionTrainer):
+    """
+    This class is required to train the model with custom dataloaders
+    """
+    def __init__(self, *args, train_dataloader, val_dataloader, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.custom_train_dataloader = train_dataloader
+        self.custom_val_dataloader = val_dataloader
+
+    # def build_dataset(self, img_path, mode="train", batch=None):
+    #     # Simply return None as we are not building a dataset here
+    #     return None
+
+    def get_dataloader(self, dataset_path, batch_size=16, rank=0, mode="train"):
+        # Use the custom dataloaders instead of constructing new ones
+        if mode == "train":
+            return self.custom_train_dataloader
+        elif mode == "val":
+            return self.custom_val_dataloader
+        else:
+            raise ValueError("Mode must be 'train' or 'val', we don't allow testing as we do out-of-sample testing")
+
 
 class YoloV8(Architecture):
   def __init__(self, hyperparameters, tracker):
@@ -27,22 +54,41 @@ class YoloV8(Architecture):
   def __str__(self):
     return str(self.model)
 
-  def train(self, dataset):
+  def train(self, dataset: YoloDataset):
     """ 
     Train the model using the dataset provided
 
     :param dataset: Dataset object containing the training data, extending torch.utils.data.Dataset
     """
-    data_loader = DataLoader(dataset, batch_size=self.hyperparameters['batch_size'], shuffle=True)
-    trainer = Trainer(self.model)
-    results = trainer.train(
-      data_loader,
-      epochs=self.hyperparameters['epochs'],
-      imgsz=self.hyperparameters['img_size'],
-      verbose=True,
-      patience=self.hyperparameters['patience'],
-    )
-    pass
+    builder = DataLoaderBuilder(dataset, self.hyperparameters['batch_size'])
+    train_loader, val_loader, test_loader = builder.build()
+    model_folder = os.path.dirname(self.hyperparameters['model_path'])
+
+    trainer_params = {
+      "epochs": self.hyperparameters['epochs'],
+      "model": self.model,
+      "save_dir": model_folder,
+      "wdir": model_folder,
+      "batch_size": self.hyperparameters['batch_size'],
+      "device": utils.get_torch_device(),
+    }
+
+    trainer = CustomDetectionTrainer(
+        train_dataloader=train_loader,
+        val_dataloader=val_loader,
+        **trainer_params
+      )
+
+    trainer.args.imgsz = self.hyperparameters['img_size']
+    trainer.args.batch_size = self.hyperparameters['batch_size'],
+    trainer.args.epochs = self.hyperparameters['epochs'],
+    trainer.args.verbose = True,
+    trainer.args.patience = self.hyperparameters['patience'],
+    trainer.args.lr0 = self.hyperparameters['learning_rate'],
+    trainer.args.lr1 = self.hyperparameters['learning_rate'],
+    
+    results = trainer.train()
+    self.model = trainer.best
 
   def evaluate(self):
     """
