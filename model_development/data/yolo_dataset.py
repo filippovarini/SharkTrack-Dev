@@ -1,8 +1,8 @@
 # Subclass of data.Dataset, just to wrap the __getitem__ method to return YOLO format!
-from data.dataset import Dataset
+from data.dataset import CustomDataset
 from data.image_processor import ImageProcessor
 
-class YoloDataset(Dataset):
+class YoloDataset(CustomDataset):
   def __init__(self, root_dir, subfolder_sampling_ratios, augmentations=[]):
     super().__init__(root_dir, subfolder_sampling_ratios, augmentations)
 

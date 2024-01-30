@@ -8,7 +8,6 @@ import torch
 import cv2
 import os
 
-REQUIRED_ANNOTATION_COLS = ["Filename", "Family", "Genus", "Species", "ymin", "xmin", "xmax", "ymax", "Augmentation", "Source"]
 ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Bbox-rotate", "Cutout"]
 MAX_CROP = 150
 
@@ -26,13 +25,10 @@ class CustomDataset(Dataset):
           of images to sample.
         augmentations: List of albumentations augmentations to apply.
         """
-        self.subfolders = os.listdir(root_dir)
+        self.subfolders = subfolder_sampling_ratios.keys()
 
         assert all([os.path.isdir(os.path.join(root_dir, folder)) for folder in self.subfolders]), \
             'root_dir should contain only directories'
-        assert len(subfolder_sampling_ratios) == len(self.subfolders) and \
-            all([subfolder in subfolder_sampling_ratios.keys() for subfolder in self.subfolders]), \
-            'subfolder_sampling_ratios should have the same keys as the subfolders in root_dir'
         assert [aug in ALLOWED_AUGMENTATIONS for aug in augmentations], \
             f'Augmentations should be one of {ALLOWED_AUGMENTATIONS}'
         
@@ -47,7 +43,7 @@ class CustomDataset(Dataset):
         dataset_size = {}
         for folder in self.subfolders:
             folder_path = os.path.join(self.root_dir, folder)
-            original_size = len(os.listdir(folder_path))
+            original_size = len([f for f in os.listdir(folder_path) if self._file_is_image(f)])
             dataset_size[folder] = original_size
             sampling_ratio = self.subfolder_sampling_ratios[folder]
             dataset_size[folder] = int(original_size * sampling_ratio)
@@ -65,11 +61,10 @@ class CustomDataset(Dataset):
     def _file_is_image(self, file):
         return file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg')
     
-    def _sample_images(self, image_paths, annotations_df, folder):
+    def _sample_images(self, image_paths, folder):
         """
         User can specify the percentage of images to sample from each subfolder.
-        In this case, sample the images and adjust annotations accordingly, by 
-        only having annotations for the sampled images.
+        In this case, sample the images.
         """
         filenames = [os.path.basename(image_path) for image_path in image_paths]
 
@@ -86,12 +81,13 @@ class CustomDataset(Dataset):
         
         for folder in self.subfolders:
             folder_path = os.path.join(self.root_dir, folder)
-            image_paths += [os.path.join(folder_path, file) for file in os.listdir(folder_path) if self._file_is_image(file)]
+            subfolder_path = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if self._file_is_image(file)]
 
-            image_paths = self._sample_images(image_paths, folder)
-
-            assert len(image_paths) == self.dataset_size[folder], \
-                f'Number of images should be equal to the dataset size. Got {len(image_paths)} images and dataset size {self.dataset_size[folder]}.' 
+            subfolder_images = self._sample_images(subfolder_path, folder)
+            assert len(subfolder_images) == self.dataset_size[folder], \
+                f'Number of images should be equal to the dataset size. Got {len(subfolder_images)} images and dataset size {self.dataset_size[folder]}.' 
+            
+            image_paths += subfolder_images
 
         return image_paths
     
