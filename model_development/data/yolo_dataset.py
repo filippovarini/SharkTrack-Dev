@@ -22,8 +22,9 @@ class YoloDataset(CustomDataset):
   def __getitem__(self, idx):
     # Use the parent class's __getitem__ method to get the image and annotations
     # and update the annotations to be in YOLO format
-    image, bboxes = super().__getitem__(idx)
+    istance = super().__getitem__(idx)
+    image, bboxes = istance['image'], istance['boxes']
     normalised_bboxes = ImageProcessor.normalise_bbox(bboxes, image)
     yolo_bboxes = self._to_yolo(normalised_bboxes)
-    return image, yolo_bboxes
+    return {"image": image, "boxes": yolo_bboxes}
 

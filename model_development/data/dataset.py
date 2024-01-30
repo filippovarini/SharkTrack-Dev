@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import albumentations as A
 import pandas as pd
 import numpy as np
+import random
 import torch
 import cv2
 import os
@@ -50,9 +51,35 @@ class CustomDataset(Dataset):
             print(f'{folder}: original size: {original_size}, samples: {dataset_size[folder]} images')
         return dataset_size
     
+    def get_img_processor(self, idx):
+        img_path = self.image_paths[idx]
+        image_folder = os.path.dirname(img_path)
+        image_id = os.path.basename(img_path)
+        return ImageProcessor(image_folder), image_id
+    
+    def plot_single_image(self, idx):
+        image_processor, image_id = self.get_img_processor(idx)
+        print(image_id)
+        image_processor.plot_img(image_id)
+    
     def get_info(self):
         # TODO
-        pass
+        sample = random.sample(range(len(self.image_paths)), 9)
+
+        boxed_images = []
+        for i in sample:
+            image_processor, image_id = self.get_img_processor(i)
+            bboxes = image_processor.read_bboxes(image_id)
+            boxed_images.append(image_processor.draw_bbox(image_id))
+
+        ImageProcessor.plot_multiple_img(
+            boxed_images,
+            [str(s) for s in sample],
+            ncols=3,
+            nrows=3,
+            main_title="Dataset Sample"
+        )
+
 
     def show_image(self, source, image_name):
         # TODO
@@ -107,7 +134,7 @@ class CustomDataset(Dataset):
         if 'Crop' in self.augmentations:
             standard_augmentations.append(A.RandomCrop(p=p, height=MAX_CROP, width=MAX_CROP))
 
-        albumentation_pipeline = A.compose(standard_augmentations, bbox_params=bbox_params)
+        albumentation_pipeline = A.Compose(standard_augmentations, bbox_params=bbox_params)
 
         labels = np.ones(len(bboxes)) # Works for single "shark class"
         # TODO: extend for species-level classifier classes
@@ -116,7 +143,7 @@ class CustomDataset(Dataset):
         
         # Some Augmentations are not available in Albumentations, so we have to define them ourselves
         if 'Cutout' in self.augmentations and np.random.rand() < p:
-            assert any([coord > 1 for bbox in aug_bboxes for coord in bbox]), 'Bbox coordinates must not be relative'
+            assert any([coord > 1 for bbox in aug_bboxes for coord in bbox]), 'Bbox coordinates must not be normalised'
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
         if 'Bbox-rotate' in self.augmentations and np.random.rand() < p:
             aug_img, aug_bboxes = bbox_only_rotate(aug_img, bboxes=aug_bboxes)
@@ -131,7 +158,9 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, idx):
         """
-        Returns image and pascal-voc format bboxes
+        Returns image and bboxes in the following format:
+        - pascal-voc
+        - non-normalised
         """
         image_path = self.image_paths[idx]
 
@@ -143,10 +172,11 @@ class CustomDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         bboxes = image_processor.read_bboxes(image_id)
+        if image_processor.is_bbox_relative(image_id):
+                bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
         if self.augmentations:
-            self._augment(image, bboxes)
-            aug_img, aug_bboxes = self.augmentations(image=image)
+            aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes
 
-        return image, bboxes
+        return {"image": image, "boxes": bboxes}
