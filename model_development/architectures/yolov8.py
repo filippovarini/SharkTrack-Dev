@@ -17,8 +17,8 @@ class CustomDetectionTrainer(DetectionTrainer):
     """
     This class is required to train the model with custom dataloaders
     """
-    def __init__(self, *args, train_dataloader, val_dataloader, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, train_dataloader, val_dataloader, overrides):
+        super().__init__(*args, overrides=overrides)
         self.custom_train_dataloader = train_dataloader
         self.custom_val_dataloader = val_dataloader
 
@@ -65,27 +65,26 @@ class YoloV8(Architecture):
     model_folder = os.path.dirname(self.hyperparameters['model_path'])
 
     trainer_params = {
+      # "task": "detect",
+      "data": "", # Empty string as we don't have a data path, we have custom dataloaders
       "epochs": self.hyperparameters['epochs'],
-      "model": self.model,
       "save_dir": model_folder,
-      "wdir": model_folder,
-      "batch_size": self.hyperparameters['batch_size'],
-      "device": utils.get_torch_device(),
+      "batch": self.hyperparameters['batch_size'],
+      # "device": utils.get_torch_device(),
+      "imgsz": self.hyperparameters['img_size'],
+      "patience": self.hyperparameters['patience'],
+      "lr0": self.hyperparameters['lr'],
+      "lrf": self.hyperparameters['lr'],
+      "verbose": True
     }
 
     trainer = CustomDetectionTrainer(
         train_dataloader=train_loader,
         val_dataloader=val_loader,
-        **trainer_params
+        overrides=trainer_params
       )
-
-    trainer.args.imgsz = self.hyperparameters['img_size']
-    trainer.args.batch_size = self.hyperparameters['batch_size'],
-    trainer.args.epochs = self.hyperparameters['epochs'],
-    trainer.args.verbose = True,
-    trainer.args.patience = self.hyperparameters['patience'],
-    trainer.args.lr0 = self.hyperparameters['learning_rate'],
-    trainer.args.lr1 = self.hyperparameters['learning_rate'],
+    
+    print(trainer.args)
     
     start_time = time.time()
     trainer.train()

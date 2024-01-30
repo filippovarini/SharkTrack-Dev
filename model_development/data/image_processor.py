@@ -28,7 +28,7 @@ class ImageProcessor:
     
     @staticmethod
     def plot_multiple_img(img_matrix_list, title_list, ncols, nrows=3, main_title=""):
-        fig, axes = plt.subplots(figsize=(20, 15), nrows=nrows, ncols=ncols, squeeze=False)
+        fig, axes = plt.subplots(figsize=(10, 7.5), nrows=nrows, ncols=ncols, squeeze=False)
         fig.suptitle(main_title, fontsize=30)
         fig.subplots_adjust(wspace=0.3, hspace=0.3)
         for i, (img, title) in enumerate(zip(img_matrix_list, title_list)):
