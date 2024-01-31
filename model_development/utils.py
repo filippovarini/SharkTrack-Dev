@@ -1,4 +1,5 @@
 import torch
+import matplotlib.pyplot as plt
 
 def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
     """
@@ -62,7 +63,6 @@ def align_annotations_with_predictions_dict_corrected(annotations, track_predict
     assert len(results["pred_track_ids"]) == tot_annotation_frames
 
     return results
-
 
 def calculate_iou(box_a, box_b):
     # Calculate the (x, y)-coordinates of the intersection rectangle
@@ -163,6 +163,33 @@ def evaluate_tracking(results, S_TRESH):
     idf1 = idtp / (idtp + 0.5 * idfn + 0.5 * idfp)
 
     return mota, motp, idf1, frame_avg_motp
+
+def plot_performance_graph(aligned_annotations, motp_per_frame):
+    """
+    Plots number of ground truth tracks vs number of predicted tracks for each frame,
+    along with the MOTP for frames where it's available.
+    """
+    gt_track_ids = aligned_annotations['gt_track_ids']
+    pred_track_ids = aligned_annotations['pred_track_ids']
+
+    gt_track_ids_count = [len(x) for x in gt_track_ids]
+    pred_track_ids_count = [len(x) for x in pred_track_ids]
+
+    # Filter out None values from MOTP list and get corresponding frame numbers
+    motp_values = [motp for motp in motp_per_frame if motp is not None]
+    motp_frames = [i for i, motp in enumerate(motp_per_frame) if motp is not None]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(gt_track_ids_count, label='Ground Truth')
+    ax.plot(pred_track_ids_count, label='Predictions')
+    ax.plot(motp_frames, motp_values, label='Frame-Avg MOTP', linestyle='-')
+
+    ax.set_xlabel('Time (seconds)')
+    ax.set_ylabel('Number of Tracks / MOTP')
+    ax.legend()
+
+    return fig
+
 
 def get_torch_device():
     """

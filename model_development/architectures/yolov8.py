@@ -1,6 +1,7 @@
 from data.yolo_dataset import YoloDataset
-from ultralytics import YOLO
 from interfaces import Architecture
+import matplotlib.pyplot as plt
+from ultralytics import YOLO
 import pandas as pd
 import numpy as np
 import utils
@@ -104,7 +105,11 @@ class YoloV8(Architecture):
       motps = []
       idf1s = []
 
-      for video in video_names:
+      # Prepare performance plot
+      # num_plots = len(video_names)
+      # performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
+      model_folder = os.path.dirname(self.hyperparameters['annotations_path'])
+      for i, video in enumerate(video_names):
         print(f'Evaluating {video}')
         video_path = bruvs_video_folder + video + '.mp4'
         annotations_path = self.bruvs_annotations_folder + video + '.csv'
@@ -126,6 +131,9 @@ class YoloV8(Architecture):
         motps.append(motp)
         idf1s.append(idf1)
 
+        fig = utils.plot_performance_graph(aligned_annotations, frame_avg_motp)
+        fig.savefig(os.path.join(model_folder, f"{video}.png"))
+
       macro_mota = round(np.mean(motas), 2)
       macro_motp = round(np.mean(motps), 2)
       macro_idf1 = round(np.mean(idf1s), 2)
@@ -134,7 +142,7 @@ class YoloV8(Architecture):
     track_end_time = time.time()
     track_time = round((track_end_time - track_start_time) / 60, 2)
 
-    return macro_mota, macro_motp, macro_idf1, track_time, utils.get_torch_device()
+    return macro_mota, macro_motp, macro_idf1, track_time, utils.get_torch_device()#, performance_plot
 
   def track(self, video_path):
     assert self.tracker is not None
