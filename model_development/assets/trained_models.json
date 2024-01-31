@@ -102,5 +102,71 @@
         "pretrained": false,
         "fine_tuning": true,
         "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_finetune/annotations.csv"
+    },
+    "test_yolo_mAP": {
+        "model_name": "test_yolo_mAP",
+        "architecture": "yolov8",
+        "epochs": 5,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "training_data": {
+            "dataset_name": "test_mvd",
+            "datasets": {
+                "rf1": 0.05,
+                "rf2": 0.05,
+                "rf3": 0.05,
+                "mwitt": 0.05,
+                "openimagesv7": 0.05,
+                "sl": 0.05,
+                "backgrounds": 0.05
+            },
+            "augmentations": []
+        },
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
+    },
+    "test_yolo_mAP_test2": {
+        "model_name": "test_yolo_mAP_test2",
+        "architecture": "yolov8",
+        "epochs": 5,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "training_data": {
+            "dataset_name": "test_mvd",
+            "datasets": {
+                "rf1": 0.05,
+                "rf2": 0.05,
+                "rf3": 0.05,
+                "mwitt": 0.05,
+                "openimagesv7": 0.05,
+                "sl": 0.05,
+                "backgrounds": 0.05
+            },
+            "augmentations": []
+        },
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP_test2/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP_test2/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
     }
 }

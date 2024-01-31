@@ -63,6 +63,7 @@ class YoloV8(Architecture):
         'verbose': True,
     }
 
+    # Take only parent folder
     print('Saving model to', self.hyperparameters['model_path'])
     model_folder = os.path.dirname(self.hyperparameters['model_path'])
     model_folder = os.path.basename(model_folder)
@@ -77,12 +78,25 @@ class YoloV8(Architecture):
     train_time = round((end_time - start_time) / 60, 2)
 
     # Saves model to model_path/weights/best.pt, but we want to save it to model_path/best.pt
-    new_model_path = os.path.join(self.hyperparameters['model_path'], 'best.pt')
+    model_folder = self.hyperparameters['model_path']
+    new_model_path = os.path.join(model_folder, 'best.pt')
     os.rename(os.path.join(self.hyperparameters['model_path'], 'weights', 'best.pt'), new_model_path)
     self.model = YOLO(os.path.join(self.hyperparameters['model_path'], 'best.pt'))
     self.hyperparameters['model_path'] = new_model_path
 
-    return train_time, dataset_time, utils.get_torch_device(), new_model_path
+    # Get val mAP of the model
+    # Yolo stores the epochs results in model_folder/results.csv and it stores
+    # the mAP50 in the "metrics/mAP50(B)" column. 
+    # The argmax("metrics/mAP50(B)") is the epoch with the highest mAP50, which
+    # is the best model.
+    assert model_folder.endswith(self.hyperparameters['model_name']), 'Model folder must end with model name'
+    results_path = os.path.join(model_folder, 'results.csv')
+    assert os.path.exists(results_path), 'Results file does not exist'
+    results = pd.read_csv(results_path)
+    results.columns = results.columns.str.strip()
+    best_mAP = results['metrics/mAP50(B)'].max()
+
+    return train_time, dataset_time, utils.get_torch_device(), new_model_path, best_mAP
 
   def evaluate(self):
     """
