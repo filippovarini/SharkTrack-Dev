@@ -54,13 +54,7 @@
                 "sl": 0.05,
                 "backgrounds": 0.05
             },
-            "augmentations": [
-                "Equalise",
-                "Rotate",
-                "Crop",
-                "Bbox-rotate",
-                "Cutout"
-            ]
+            "augmentations": []
         },
         "conf_threshold": 0.2,
         "eval_data": "eval1",

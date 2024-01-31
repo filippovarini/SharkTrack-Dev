@@ -41,6 +41,11 @@ class ImageProcessor:
             ax.set_yticks([])
         plt.show()
     
+    # Transformations
+    @staticmethod
+    def bgr2rgb(img):
+        return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
     def read_annotations(self, img_id):
         return self.annotations_df.loc[self.annotations_df.Filename == img_id, 'Family Genus Species'.split()].values
 

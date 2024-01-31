@@ -1,15 +1,10 @@
-from ultralytics.models.yolo.detect import DetectionTrainer
-from data.dataloader_builder import DataLoaderBuilder
 from data.yolo_dataset import YoloDataset
 from ultralytics import YOLO
 from interfaces import Architecture
-from types import SimpleNamespace
 import pandas as pd
 import numpy as np
 import utils
-import torch
 import time
-import json
 import os
 
 
@@ -20,16 +15,19 @@ class YoloV8(Architecture):
     self.tracker = tracker
     
     if self.hyperparameters["pretrained"]:
+      print('Loading pretrained model - no training required')
       self.model = YOLO(self.hyperparameters['model_path'])
     else:
       if self.hyperparameters["fine_tuning"]:
         # Load an existing model
+        print('Loading pretrained model and fine-tuning it')
         assert self.hyperparameters["pretrained_model_path"] is not None and \
           os.path.exists(self.hyperparameters["pretrained_model_path"]) and \
           self.hyperparameters["pretrained_model_path"].endswith('.pt'), \
           'Pretrained model path must be specified and must exist'
         self.model = YOLO(self.hyperparameters["pretrained_model_path"])
       else:
+        print('Training model from scratch')
         assert self.hyperparameters["model_size"] in ["n", "s", "m", "l", "x"]
         self.model = YOLO(f'yolov8{self.hyperparameters["model_size"]}.pt')
 
@@ -52,8 +50,7 @@ class YoloV8(Architecture):
     dataset_time = round((time.time() - dataset_time) / 60, 2)
     print(f'Dataset built in {dataset_time} minutes')
 
-    # Train on the dataset
-
+    # 2. Train on the dataset
     train_params = {
         'data': f'{data_path}/data_config.yaml',
         'epochs': self.hyperparameters['epochs'],
@@ -62,7 +59,7 @@ class YoloV8(Architecture):
         'patience': self.hyperparameters['patience'],
         'lr0': self.hyperparameters['lr'],
         'lrf': self.hyperparameters['lr'],
-        'verbose': True
+        'verbose': True,
     }
 
     print('Saving model to', self.hyperparameters['model_path'])

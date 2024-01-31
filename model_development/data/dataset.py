@@ -14,7 +14,7 @@ MAX_CROP = 150
 
 
 class CustomDataset(Dataset):
-    def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[]):
+    def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[]):
         """
         Note:
         - Augmentations don't change the number of images in the dataset, as they are applied on the fly.
@@ -33,7 +33,7 @@ class CustomDataset(Dataset):
 
         assert all([os.path.isdir(os.path.join(root_dir, folder)) for folder in self.subfolders]), \
             'root_dir should contain only directories'
-        assert [aug in ALLOWED_AUGMENTATIONS for aug in augmentations], \
+        assert len(augmentations) == 0 or [aug in ALLOWED_AUGMENTATIONS for aug in augmentations], \
             f'Augmentations should be one of {ALLOWED_AUGMENTATIONS}'
         
         self.root_dir = root_dir
@@ -41,6 +41,7 @@ class CustomDataset(Dataset):
         self.subfolder_sampling_ratios = subfolder_sampling_ratios
         self.dataset_size = self._inspect_dataset_size()
         self.image_paths  = self._load_paths()
+        self.transforms = transforms
     
     def _inspect_dataset_size(self):
         # Print number of images in each subfolder
@@ -125,6 +126,7 @@ class CustomDataset(Dataset):
         Composes all the augmentations specified. Making sure that there is 
         equal probability of each augmentation being applied and none of them
         """
+        assert len(self.augmentations) > 0, 'Augmentations should not be empty'
         standard_augmentations = []
         p = 1 / len(self.augmentations)
         bbox_params = {'format': 'pascal_voc', 'label_fields': ['labels']} 
@@ -158,6 +160,11 @@ class CustomDataset(Dataset):
         assert type(aug_bboxes) == np.ndarray, 'Bboxes should be a numpy array'
         
         return aug_img, aug_bboxes
+    
+    def _apply_transforms(self, img):
+        for transform in self.transforms:
+            img = transform(img)
+        return img
         
     def __len__(self):
         dataset_length = sum(self.dataset_size.values())
@@ -178,13 +185,13 @@ class CustomDataset(Dataset):
         image_processor = ImageProcessor(image_folder)
 
         image = image_processor.read_img(image_id)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = self._apply_transforms(image)
         
         bboxes = image_processor.read_bboxes(image_id)
         if image_processor.is_bbox_relative(image_id):
             bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
-        if self.augmentations:
+        if len(self.augmentations) > 0:
             aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes
 
