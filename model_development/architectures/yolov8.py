@@ -13,29 +13,6 @@ import json
 import os
 
 
-class CustomDetectionTrainer(DetectionTrainer):
-    """
-    This class is required to train the model with custom dataloaders
-    """
-    def __init__(self, *args, train_dataloader, val_dataloader, overrides):
-        super().__init__(*args, overrides=overrides)
-        self.custom_train_dataloader = train_dataloader
-        self.custom_val_dataloader = val_dataloader
-
-    # def build_dataset(self, img_path, mode="train", batch=None):
-    #     # Simply return None as we are not building a dataset here
-    #     return None
-
-    def get_dataloader(self, dataset_path, batch_size=16, rank=0, mode="train"):
-        # Use the custom dataloaders instead of constructing new ones
-        if mode == "train":
-            return self.custom_train_dataloader
-        elif mode == "val":
-            return self.custom_val_dataloader
-        else:
-            raise ValueError("Mode must be 'train' or 'val', we don't allow testing as we do out-of-sample testing")
-
-
 class YoloV8(Architecture):
   def __init__(self, hyperparameters, tracker):
     super().__init__()
@@ -45,9 +22,16 @@ class YoloV8(Architecture):
     if self.hyperparameters["pretrained"]:
       self.model = YOLO(self.hyperparameters['model_path'])
     else:
-      # TODO: set model path
-      assert self.hyperparameters["model_size"] in ["n", "s", "m", "l", "x"]
-      self.model = YOLO(f'yolov8{self.hyperparameters["model_size"]}.pt')
+      if self.hyperparameters["fine_tuning"]:
+        # Load an existing model
+        assert self.hyperparameters["pretrained_model_path"] is not None and \
+          os.path.exists(self.hyperparameters["pretrained_model_path"]) and \
+          self.hyperparameters["pretrained_model_path"].endswith('.pt'), \
+          'Pretrained model path must be specified and must exist'
+        self.model = YOLO(self.hyperparameters["pretrained_model_path"])
+      else:
+        assert self.hyperparameters["model_size"] in ["n", "s", "m", "l", "x"]
+        self.model = YOLO(f'yolov8{self.hyperparameters["model_size"]}.pt')
 
     print(f"Initialised Model {self.hyperparameters['model_name']} ")
 
@@ -60,29 +44,47 @@ class YoloV8(Architecture):
 
     :param dataset: Dataset object containing the training data, extending torch.utils.data.Dataset
     """
+    assert not self.hyperparameters['pretrained'], 'Model is already trained on this data, no need to re-training'
+
     # 1. Get dataset
     dataset_time = time.time()
     data_path = dataset.build()
     dataset_time = round((time.time() - dataset_time) / 60, 2)
+    print(f'Dataset built in {dataset_time} minutes')
+
+    # Train on the dataset
+
+    train_params = {
+        'data': f'{data_path}/data_config.yaml',
+        'epochs': self.hyperparameters['epochs'],
+        'imgsz': self.hyperparameters['img_size'],
+        'batch': self.hyperparameters['batch_size'],
+        'patience': self.hyperparameters['patience'],
+        'lr0': self.hyperparameters['lr'],
+        'lrf': self.hyperparameters['lr'],
+        'verbose': True
+    }
+
+    print('Saving model to', self.hyperparameters['model_path'])
+    model_folder = os.path.dirname(self.hyperparameters['model_path'])
+    model_folder = os.path.basename(model_folder)
+    train_params['project'] = model_folder
+    train_params['name'] = self.hyperparameters['model_name']
 
     print('Starting training...')
+    print('Train params:', train_params)
     start_time = time.time()
-    results = self.model.train(
-      data=data_path,
-      epochs=self.hyperparameters['epochs'],
-      imgsz=self.hyperparameters['img_size'],
-      batch_size=self.hyperparameters['batch_size'],
-      patience=self.hyperparameters['patience'],
-      lr0=self.hyperparameters['lr'],
-      lrf=self.hyperparameters['lr'],
-      verbose=True
-    )
+    self.model.train(**train_params)
     end_time = time.time()
     train_time = round((end_time - start_time) / 60, 2)
 
-    self.model = results.best
+    # Saves model to model_path/weights/best.pt, but we want to save it to model_path/best.pt
+    new_model_path = os.path.join(self.hyperparameters['model_path'], 'best.pt')
+    os.rename(os.path.join(self.hyperparameters['model_path'], 'weights', 'best.pt'), new_model_path)
+    self.model = YOLO(os.path.join(self.hyperparameters['model_path'], 'best.pt'))
+    self.hyperparameters['model_path'] = new_model_path
 
-    return train_time, dataset_time, utils.get_torch_device()
+    return train_time, dataset_time, utils.get_torch_device(), new_model_path
 
   def evaluate(self):
     """
@@ -116,8 +118,9 @@ class YoloV8(Architecture):
         # Extract and store annotations for investigation
         extracted_pred_results = self._extract_tracks(results)
         aligned_annotations = utils.align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, self.bruvs_video_length)
+        aligned_annotations['frame_id'] = [i for i in range(len(aligned_annotations['gt_bbox_xyxys']))]
         aligned_annotations_df = pd.DataFrame(aligned_annotations)
-        aligned_annotations_path = self.hyperparameters['annotation_path']
+        aligned_annotations_path = self.hyperparameters['annotations_path']
         aligned_annotations_df.to_csv(aligned_annotations_path, index=False)
 
         mota, motp, idf1, frame_avg_motp = utils.evaluate_tracking(aligned_annotations, self.hyperparameters['iou_association_threshold'])

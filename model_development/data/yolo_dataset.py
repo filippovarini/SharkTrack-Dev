@@ -42,16 +42,7 @@ class YoloDataset(CustomDataset):
     """
     Yolo wants the data to be stored in a specific folder structure and to pass
     the path. We could do wiht a dataloader but this approach is leaner.
-    """
-    dataset_path = os.path.join(self.experimentation_dataset_path, self.dataset_name)
-    if self.dataset_name not in os.listdir(self.experimentation_dataset_path):
-      try:
-        train_ratio, val_ratio, test_ratio = DataLoaderBuilder.get_split_ratios()
-        print(f'Building dataset {self.dataset_name} in {dataset_path} by copying {len(self)} images...')
-        # Build dataset by randomly sampling len(self) * {train/val/test}_ratio images from each subfolder
-        # and copying them to the dataset_path.
-        # The folder structure should be:
-        # dataset_path
+    # dataset_path
         # ├── train
         # │   ├── images
         # │   └── labels
@@ -60,10 +51,12 @@ class YoloDataset(CustomDataset):
         # │   └── labels
         # └── test
         #     ├── images
-        #     └── labels
-        # Consider that you can get image and label by doing self[i]['image'] and self[i]['boxes']
-        # the boxes have the yolo structure and should be converted in txt files with the same name as the image
-        # and stored in the labels folder
+    """
+    dataset_path = os.path.join(self.experimentation_dataset_path, self.dataset_name)
+    if self.dataset_name not in os.listdir(self.experimentation_dataset_path):
+      try:
+        train_ratio, val_ratio, test_ratio = DataLoaderBuilder.get_split_ratios()
+        print(f'Building dataset {self.dataset_name} in {dataset_path} by copying {len(self)} images...')
 
         # Create dataset folder
         os.mkdir(dataset_path)
@@ -83,10 +76,12 @@ class YoloDataset(CustomDataset):
 
         subfolders = ['train', 'val', 'test']
         for subfolder in subfolders:
-          print(f'Creating subfolder {subfolder} of size {len(split[subfolder])} ...')
+          print(f'Creating subfolder "{subfolder}" of size {len(split[subfolder])} ...')
           os.mkdir(os.path.join(dataset_path, subfolder))
-          os.mkdir(os.path.join(dataset_path, subfolder, 'images'))
-          os.mkdir(os.path.join(dataset_path, subfolder, 'labels'))
+          images_path = os.path.join(dataset_path, subfolder, 'images')
+          labels_path = os.path.join(dataset_path, subfolder, 'labels')
+          os.mkdir(images_path)
+          os.mkdir(labels_path)
 
           # Copy images and create labels
           # Note that when we get an image, we perform augmentations and get back the 
@@ -98,7 +93,7 @@ class YoloDataset(CustomDataset):
             image, bboxes = self[i]['image'], self[i]['boxes']
             image_path = self.image_paths[i]
             image_id = os.path.basename(image_path)
-            new_image_path = os.path.join(dataset_path, subfolder, 'images', image_id)
+            new_image_path = os.path.join(images_path, image_id)
             if len(self.augmentations) > 0:
               # Write image represented by numpy tensor to new_image_path
               cv2.imwrite(new_image_path, image)
@@ -107,20 +102,21 @@ class YoloDataset(CustomDataset):
               shutil.copyfile(image_path, new_image_path)
 
             # Create label
-            label_path = os.path.splitext(image_path)[0] + '.txt'
+            label_id = os.path.splitext(image_id)[0] + '.txt'
+            label_path = os.path.join(labels_path, label_id)
             with open(label_path, 'w') as f:
               for bbox in bboxes:
                 f.write(' '.join([str(round(b, 4)) for b in bbox]) + '\n')
 
         # Add data_config.yaml file with Yolo Format
         with open(os.path.join(dataset_path, 'data_config.yaml'), 'w') as f:
-          f.write(f"path: {dataset_path}")
-          f.write(f"train: ./train")
-          f.write(f"val: ./val")
-          f.write(f"test: ./test")
-          f.write(f"names:")
+          f.write(f"path: {dataset_path} \n")
+          f.write(f"train: ./train \n")
+          f.write(f"val: ./val \n")
+          f.write(f"test: ./test \n")
+          f.write(f"names: \n")
           for class_id, class_name in self.classes.items():
-            f.write(f"  {class_id}: {class_name}")
+            f.write(f"  {class_id}: {class_name} \n")
           
       except Exception as e:
         print(f'Error while building dataset {self.dataset_name}: {e}')

@@ -51,7 +51,7 @@ class CustomDataset(Dataset):
             dataset_size[folder] = original_size
             sampling_ratio = self.subfolder_sampling_ratios[folder]
             dataset_size[folder] = int(original_size * sampling_ratio)
-            print(f'{folder}: original size: {original_size}, samples: {dataset_size[folder]} images')
+        print(f'Dataset size: {dataset_size}')
         return dataset_size
     
     def get_img_processor(self, idx):
@@ -145,7 +145,6 @@ class CustomDataset(Dataset):
 
         # BBoxes are list of tuples. Turn them in 2d numpy array
         aug_bboxes = np.array(aug_bboxes)
-        print(aug_bboxes)
         
         # Some Augmentations are not available in Albumentations, so we have 
         # to define them ourselves. Usually, they are applied on the bounding
