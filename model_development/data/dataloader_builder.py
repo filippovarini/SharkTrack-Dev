@@ -12,6 +12,10 @@ class DataLoaderBuilder():
     self.val_size = int(VAL_RATIO * len(dataset))
     self.test_size = len(dataset) - self.train_size - self.val_size
     self.batch_size = batch_size
+
+  @staticmethod
+  def get_split_ratios():
+    return TRAIN_RATIO, VAL_RATIO, TEST_RATIO
   
   def build(self):
     train_dataset, val_dataset, test_dataset = random_split(self.dataset, [self.train_size, self.val_size, self.test_size])

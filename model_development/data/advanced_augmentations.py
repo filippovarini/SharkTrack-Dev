@@ -10,7 +10,7 @@ def bbox_only_rotate(img, bboxes):
     bbox_params = {'format': 'pascal_voc', 'label_fields': ['labels']}
     aug = A.Compose([A.Rotate(p=1, limit=90)], bbox_params=bbox_params)
     anno = aug(image=img, bboxes=bboxes, labels=np.ones(len(bboxes)))
-    new_bboxes = anno['bboxes']
+    new_bboxes = np.array(anno['bboxes'])
     rotated_image = anno['image']
     
     # Extract the bboxed images from new_image and paste them in the original img

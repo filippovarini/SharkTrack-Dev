@@ -12,6 +12,7 @@
     "model_size": "m",
     "patience": 10,
     "training_data": {
+      "name": "mvd2",
       "datasets": {
         "rf1": 0.2,
         "rf2": 0.35,

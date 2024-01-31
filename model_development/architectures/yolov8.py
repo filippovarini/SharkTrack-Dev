@@ -60,39 +60,29 @@ class YoloV8(Architecture):
 
     :param dataset: Dataset object containing the training data, extending torch.utils.data.Dataset
     """
-    builder = DataLoaderBuilder(dataset, self.hyperparameters['batch_size'])
-    train_loader, val_loader, test_loader = builder.build()
-    model_folder = os.path.dirname(self.hyperparameters['model_path'])
+    # 1. Get dataset
+    dataset_time = time.time()
+    data_path = dataset.build()
+    dataset_time = round((time.time() - dataset_time) / 60, 2)
 
-    trainer_params = {
-      # "task": "detect",
-      "data": "", # Empty string as we don't have a data path, we have custom dataloaders
-      "epochs": self.hyperparameters['epochs'],
-      "save_dir": model_folder,
-      "batch": self.hyperparameters['batch_size'],
-      # "device": utils.get_torch_device(),
-      "imgsz": self.hyperparameters['img_size'],
-      "patience": self.hyperparameters['patience'],
-      "lr0": self.hyperparameters['lr'],
-      "lrf": self.hyperparameters['lr'],
-      "verbose": True
-    }
-
-    trainer = CustomDetectionTrainer(
-        train_dataloader=train_loader,
-        val_dataloader=val_loader,
-        overrides=trainer_params
-      )
-    
-    print(trainer.args)
-    
+    print('Starting training...')
     start_time = time.time()
-    trainer.train()
+    results = self.model.train(
+      data=data_path,
+      epochs=self.hyperparameters['epochs'],
+      imgsz=self.hyperparameters['img_size'],
+      batch_size=self.hyperparameters['batch_size'],
+      patience=self.hyperparameters['patience'],
+      lr0=self.hyperparameters['lr'],
+      lrf=self.hyperparameters['lr'],
+      verbose=True
+    )
     end_time = time.time()
     train_time = round((end_time - start_time) / 60, 2)
-    self.model = trainer.best
 
-    return train_time, utils.get_torch_device()
+    self.model = results.best
+
+    return train_time, dataset_time, utils.get_torch_device()
 
   def evaluate(self):
     """

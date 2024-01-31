@@ -14,7 +14,7 @@ MAX_CROP = 150
 
 
 class CustomDataset(Dataset):
-    def __init__(self, root_dir, subfolder_sampling_ratios, augmentations=[]):
+    def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[]):
         """
         Note:
         - Augmentations don't change the number of images in the dataset, as they are applied on the fly.
@@ -26,7 +26,10 @@ class CustomDataset(Dataset):
           of images to sample.
         augmentations: List of albumentations augmentations to apply.
         """
+        self.experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
+
         self.subfolders = subfolder_sampling_ratios.keys()
+        self.dataset_name = dataset_name
 
         assert all([os.path.isdir(os.path.join(root_dir, folder)) for folder in self.subfolders]), \
             'root_dir should contain only directories'
@@ -79,7 +82,6 @@ class CustomDataset(Dataset):
             nrows=3,
             main_title="Dataset Sample"
         )
-
 
     def show_image(self, source, image_name):
         # TODO
@@ -140,13 +142,21 @@ class CustomDataset(Dataset):
         # TODO: extend for species-level classifier classes
         aug = albumentation_pipeline(image=img, bboxes=bboxes, labels=labels)
         aug_img, aug_bboxes = aug['image'], aug['bboxes']
+
+        # BBoxes are list of tuples. Turn them in 2d numpy array
+        aug_bboxes = np.array(aug_bboxes)
+        print(aug_bboxes)
         
-        # Some Augmentations are not available in Albumentations, so we have to define them ourselves
-        if 'Cutout' in self.augmentations and np.random.rand() < p:
-            assert any([coord > 1 for bbox in aug_bboxes for coord in bbox]), 'Bbox coordinates must not be normalised'
+        # Some Augmentations are not available in Albumentations, so we have 
+        # to define them ourselves. Usually, they are applied on the bounding
+        # box, so we can run them only if the image has bounding boxes.
+        if 'Cutout' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
+            assert all([np.any(np.array(bbox) > 1) for bbox in aug_bboxes]), 'Bbox coordinates must not be normalised'
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
-        if 'Bbox-rotate' in self.augmentations and np.random.rand() < p:
+        if 'Bbox-rotate' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
             aug_img, aug_bboxes = bbox_only_rotate(aug_img, bboxes=aug_bboxes)
+
+        assert type(aug_bboxes) == np.ndarray, 'Bboxes should be a numpy array'
         
         return aug_img, aug_bboxes
         
@@ -173,7 +183,7 @@ class CustomDataset(Dataset):
         
         bboxes = image_processor.read_bboxes(image_id)
         if image_processor.is_bbox_relative(image_id):
-                bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
+            bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
         if self.augmentations:
             aug_img, aug_bboxes = self._augment(image, bboxes)
