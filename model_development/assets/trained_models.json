@@ -168,5 +168,44 @@
         "tracker": "botsort",
         "pretrained": true,
         "fine_tuning": false
+    },
+    "test_yolo_mAP_test3": {
+        "model_name": "test_yolo_mAP_test3",
+        "architecture": "yolov8",
+        "epochs": 5,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "test_mvd",
+            "datasets": {
+                "rf1": 0.05,
+                "rf2": 0.05,
+                "rf3": 0.05,
+                "mwitt": 0.05,
+                "openimagesv7": 0.05,
+                "sl": 0.05,
+                "backgrounds": 0.05
+            },
+            "augmentations": [
+                "Equalise",
+                "Rotate",
+                "Crop",
+                "Bbox-rotate",
+                "Cutout"
+            ]
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP_test3/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_mAP_test3/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
     }
 }

@@ -66,23 +66,32 @@ class CustomDataset(Dataset):
         print(image_id)
         image_processor.plot_img(image_id)
     
-    def get_info(self):
-        # TODO
+    def get_info(self, model_folder=None):
         sample = random.sample(range(len(self.image_paths)), 9)
 
         boxed_images = []
         for i in sample:
             image_processor, image_id = self.get_img_processor(i)
-            bboxes = image_processor.read_bboxes(image_id)
             boxed_images.append(image_processor.draw_bbox(image_id))
 
-        ImageProcessor.plot_multiple_img(
+        save_fig = model_folder is not None
+        fig = ImageProcessor.plot_multiple_img(
             boxed_images,
             [str(s) for s in sample],
             ncols=3,
             nrows=3,
-            main_title="Dataset Sample"
+            main_title="Dataset Sample",
+            return_fig=save_fig
         )
+
+        if save_fig:
+            # If model_folder is not a folder, take the parent folder
+            if not os.path.isdir(model_folder):
+                print(f'{model_folder} is not a folder. Taking parent folder instead.')
+                model_folder = os.path.dirname(model_folder)
+            fig_path = os.path.join(model_folder, 'dataset_sample.png')
+            print(f'Saving dataset sample to {fig_path}')
+            fig.savefig(fig_path)
 
     def show_image(self, source, image_name):
         # TODO

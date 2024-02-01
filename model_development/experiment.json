@@ -1,5 +1,5 @@
 {
-  "model_name": "test_yolo_mAP_test2",
+  "model_name": "test_yolo_mAP_test3",
   "architecture": "yolov8",
   "epochs": 5,
   "batch_size": 16,

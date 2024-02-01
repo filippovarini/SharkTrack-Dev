@@ -168,7 +168,8 @@ class YoloV8(Architecture):
       conf=self.hyperparameters['conf_threshold'],
       iou=self.hyperparameters['iou_association_threshold'],
       imgsz=self.hyperparameters['img_size'],
-      tracker=str(self.tracker)
+      tracker=str(self.tracker),
+      verbose=False
     )
     return results
     

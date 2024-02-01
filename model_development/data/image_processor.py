@@ -27,7 +27,7 @@ class ImageProcessor:
         return denormalised_bboxes
     
     @staticmethod
-    def plot_multiple_img(img_matrix_list, title_list, ncols, nrows=3, main_title=""):
+    def plot_multiple_img(img_matrix_list, title_list, ncols, nrows=3, main_title="", return_fig=False):
         fig, axes = plt.subplots(figsize=(10, 7.5), nrows=nrows, ncols=ncols, squeeze=False)
         fig.suptitle(main_title, fontsize=30)
         fig.subplots_adjust(wspace=0.3, hspace=0.3)
@@ -39,7 +39,10 @@ class ImageProcessor:
             ax.grid(False)
             ax.set_xticks([])
             ax.set_yticks([])
-        plt.show()
+        if return_fig:
+            return fig
+        else:
+            plt.show()
     
     # Transformations
     @staticmethod

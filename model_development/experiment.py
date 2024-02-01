@@ -25,7 +25,6 @@ def prepare_dataset(hyperparameters, metrics):
     data_config = hyperparameters['training_data']
     dataset_class = dataset_mapping[hyperparameters['architecture']]
     dataset = dataset_class(data_config['dataset_name'], data_dir, data_config['datasets'], data_config.get('augmentations', []), transforms)
-    dataset.get_info()
     metrics['dataset_size'] = len(dataset)
     return dataset, metrics
 
@@ -59,11 +58,12 @@ def model_experimentation(hyperparameters):
         model = architectures[hyperparameters['architecture']](hyperparameters, tracker)
         metrics = {}
         
-        # Training
+        # Setup Data and Train
         if not hyperparameters['pretrained']:
             dataset, metrics = prepare_dataset(hyperparameters, metrics)
             metrics['dataset_size'] = len(dataset)
             final_model_path, metrics = train_model(model, dataset, metrics)
+            dataset.get_info(hyperparameters["model_path"]) # save dataset sample
             hyperparameters['model_path'] = final_model_path
 
         metrics = evaluate_model(model, metrics)
