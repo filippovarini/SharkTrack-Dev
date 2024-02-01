@@ -1,2 +1,3 @@
 model_development/wandb
 model_development/models/*
+model_development/*.pt
