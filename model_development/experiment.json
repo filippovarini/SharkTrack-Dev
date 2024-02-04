@@ -1,12 +1,12 @@
 {
-  "model_name": "test_yolo_dataset2",
+  "model_name": "yolov8_s_mvd4_50",
   "architecture": "yolov8",
-  "epochs": 5,
+  "epochs": 50,
   "batch_size": 16,
   "img_size": 640,
   "lr": 0.01,
   "greyscale": false,
-  "model_size": "n",
+  "model_size": "s",
   "pretrained_model_path": null,
   "patience": 10,
   "conf_threshold": 0.2,
@@ -14,10 +14,16 @@
   "iou_association_threshold": 0.5,
   "tracker": "botsort",
   "training_data": {
-    "dataset_name": "test_mvd2",
+    "dataset_name": "mvd4",
     "datasets": {
-      "mwitt": 2419
+      "rf1": 1,
+      "rf2": 1,
+      "rf3": 0.15,
+      "mwitt": 1,
+      "openimagesv7": 1,
+      "sl": 1,
+      "backgrounds": 1
     },
-    "augmentations": ["shofiads"]
+    "augmentations": []
   }
 }

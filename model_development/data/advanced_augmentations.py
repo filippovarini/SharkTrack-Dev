@@ -3,39 +3,6 @@ from data.image_processor import ImageProcessor
 import numpy as np
 import cv2
 
-def bbox_only_rotate(img, bboxes):
-    """ 
-    Rotates only the bounding box in the image
-    """
-    bbox_params = {'format': 'pascal_voc', 'label_fields': ['labels']}
-    aug = A.Compose([A.Rotate(p=1, limit=90)], bbox_params=bbox_params)
-    anno = aug(image=img, bboxes=bboxes, labels=np.ones(len(bboxes)))
-    new_bboxes = np.array(anno['bboxes'])
-    rotated_image = anno['image']
-    
-    # Extract the bboxed images from new_image and paste them in the original img
-    # Create a copy of the original image to paste the rotated regions
-    result_image = img.copy()
-
-    # Iterate over the original and new bounding boxes
-    for original_bbox, new_bbox in zip(bboxes, new_bboxes):
-        # Extract coordinates
-        x_min, y_min, x_max, y_max = [int(coord) for coord in original_bbox]
-        new_x_min, new_y_min, new_x_max, new_y_max = [int(coord) for coord in new_bbox]
-
-        # Extract the rotated region from the rotated image
-        rotated_region = rotated_image[new_y_min:new_y_max, new_x_min:new_x_max]
-
-        # Resize the rotated region to fit the original bbox size
-        # original_width, original_height = x_max - x_min, y_max - y_min
-        # resized_rotated_region = cv2.resize(rotated_region, (original_width, original_height))
-
-        # Paste the resized rotated region onto the original image
-        # result_image[y_min:y_max, x_min:x_max] = resized_rotated_region
-        result_image[new_y_min:new_y_max, new_x_min:new_x_max] = rotated_region
-    
-    return result_image, new_bboxes
-
 def apply_custom_cutout(image, bboxes, fill_color=(130, 160, 160)):
     """
     Applies cutout on the bounding box, to simulate occlusion.

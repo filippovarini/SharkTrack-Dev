@@ -93,7 +93,8 @@ class YoloDataset(CustomDataset):
         # However, if augmentation is [], then we don't perform any augmentation,
         # so we can directly use shutil.copyfile
         for i in split[subfolder]:
-          image, bboxes = self[i]['image'], self[i]['boxes']
+          annotations = self[i]
+          image, bboxes = annotations['image'], annotations['bboxes']
           image_path = self.image_paths[i]
           image_id = os.path.basename(image_path)
           new_image_path = os.path.join(images_path, image_id)

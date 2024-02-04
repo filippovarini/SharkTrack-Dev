@@ -43,23 +43,31 @@ class ImageProcessor:
             return fig
         else:
             plt.show()
+
+    @staticmethod
+    def draw_rect(img, bboxes, color=(255, 0, 0), show=False):
+        img = img.copy()
+        for bbox in bboxes:
+            bbox = np.array(bbox).astype(int)
+            pt1, pt2 = (bbox[0], bbox[1]), (bbox[2], bbox[3])
+            img = cv2.rectangle(img, pt1, pt2, color, int(max(img.shape[:2]) / 200))
+        if show:
+            ImageProcessor.show_image(img)
+        return img
     
     # Transformations
     @staticmethod
     def bgr2rgb(img):
         return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
+    @staticmethod
+    def show_image(img):
+        img_rgb = ImageProcessor.bgr2rgb(img)
+        plt.imshow(img_rgb)
+        plt.show()
+    
     def read_annotations(self, img_id):
         return self.annotations_df.loc[self.annotations_df.Filename == img_id, 'Family Genus Species'.split()].values
-
-
-    def draw_rect(self, img, bboxes, color=(255, 0, 0)):
-        img = img.copy()
-        for bbox in bboxes:
-            bbox = np.array(bbox).astype(int)
-            pt1, pt2 = (bbox[0], bbox[1]), (bbox[2], bbox[3])
-            img = cv2.rectangle(img, pt1, pt2, color, int(max(img.shape[:2]) / 200))
-        return img
 
     def read_img(self, img_id):
         img_path = os.path.join(self.image_folder, img_id)

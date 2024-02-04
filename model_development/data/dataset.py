@@ -1,4 +1,4 @@
-from data.advanced_augmentations import apply_custom_cutout, bbox_only_rotate
+from data.advanced_augmentations import apply_custom_cutout
 from data.image_processor import ImageProcessor
 from torch.utils.data import Dataset
 import albumentations as A
@@ -91,10 +91,6 @@ class CustomDataset(Dataset):
             fig_path = os.path.join(model_folder, 'dataset_sample.png')
             print(f'Saving dataset sample to {fig_path}')
             fig.savefig(fig_path)
-
-    def show_image(self, source, image_name):
-        # TODO
-        pass
     
     def _file_is_image(self, file):
         return file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg')
@@ -160,10 +156,9 @@ class CustomDataset(Dataset):
         # to define them ourselves. Usually, they are applied on the bounding
         # box, so we can run them only if the image has bounding boxes.
         if 'Cutout' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
+            print('cutout')
             assert all([np.any(np.array(bbox) > 1) for bbox in aug_bboxes]), 'Bbox coordinates must not be normalised'
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
-        if 'Bbox-rotate' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
-            aug_img, aug_bboxes = bbox_only_rotate(aug_img, bboxes=aug_bboxes)
 
         assert type(aug_bboxes) == np.ndarray, 'Bboxes should be a numpy array'
         
@@ -203,4 +198,4 @@ class CustomDataset(Dataset):
             aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes
 
-        return {"image": image, "boxes": bboxes}
+        return {"image": image, "bboxes": bboxes}
