@@ -23,7 +23,7 @@ def prepare_dataset(hyperparameters, metrics):
     data_dir = "/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/images_raw/"
     data_config = hyperparameters['training_data']
     dataset_class = dataset_mapping[hyperparameters['architecture']]
-    dataset = dataset_class(data_config['dataset_name'], data_dir, data_config['datasets'], data_config.get('augmentations', []))
+    dataset = dataset_class(data_config['dataset_name'], data_dir, data_config['datasets'], data_config.get('augmentations', []), img_size=hyperparameters['img_size'])
     metrics['dataset_size'] = len(dataset)
     return dataset, metrics
 

@@ -10,13 +10,12 @@ import cv2
 import os
 
 ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Bbox-rotate", "Cutout"]
-MAX_CROP = 150
 
 
 class CustomDataset(Dataset):
     experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
 
-    def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[]):
+    def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[], **kwargs):
         """
         Note:
         - Augmentations don't change the number of images in the dataset, as they are applied on the fly.
@@ -39,6 +38,7 @@ class CustomDataset(Dataset):
         self.root_dir = root_dir
         self.augmentations = augmentations
         self.subfolder_sampling_ratios = subfolder_sampling_ratios
+        self.img_size = kwargs['img_size'] # size of image the model takes
         self.dataset_size = self._inspect_dataset_size()
         self.image_paths  = self._load_paths()
         self.transforms = transforms
@@ -67,11 +67,12 @@ class CustomDataset(Dataset):
     
     def get_info(self, model_folder=None):
         sample = random.sample(range(len(self.image_paths)), 9)
-
         boxed_images = []
         for i in sample:
-            image_processor, image_id = self.get_img_processor(i)
-            boxed_images.append(image_processor.draw_bbox(image_id))
+            annotation = self[i]
+            img = annotation['image']
+            bboxes = annotation['bboxes']
+            boxed_images.append(ImageProcessor.draw_rect(img, bboxes))
 
         save_fig = model_folder is not None
         fig = ImageProcessor.plot_multiple_img(
@@ -140,7 +141,7 @@ class CustomDataset(Dataset):
         if 'Rotate' in self.augmentations:
             standard_augmentations.append(A.Rotate(limit=90, p=p))
         if 'Crop' in self.augmentations:
-            standard_augmentations.append(A.RandomCrop(p=p, height=MAX_CROP, width=MAX_CROP))
+            standard_augmentations.append(A.RandomCrop(p=p, height=self.img_size, width=self.img_size))
 
         albumentation_pipeline = A.Compose(standard_augmentations, bbox_params=bbox_params)
 
@@ -156,7 +157,6 @@ class CustomDataset(Dataset):
         # to define them ourselves. Usually, they are applied on the bounding
         # box, so we can run them only if the image has bounding boxes.
         if 'Cutout' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
-            print('cutout')
             assert all([np.any(np.array(bbox) > 1) for bbox in aug_bboxes]), 'Bbox coordinates must not be normalised'
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
 

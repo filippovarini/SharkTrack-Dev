@@ -9,8 +9,8 @@ import cv2
 import os
 
 class YoloDataset(CustomDataset):
-  def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[]):
-    super().__init__(dataset_name, root_dir, subfolder_sampling_ratios, augmentations)
+  def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[], **kwargs):
+    super().__init__(dataset_name, root_dir, subfolder_sampling_ratios, augmentations,  transforms=[], **kwargs)
     self.classes = {0: 'shark'} # single class object detection
 
   def construct_classes(self):
