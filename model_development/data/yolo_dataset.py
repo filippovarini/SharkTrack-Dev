@@ -4,8 +4,9 @@ from data.image_processor import ImageProcessor
 from data.dataloader_builder import DataLoaderBuilder
 import random
 import shutil
-import os
+import yaml
 import cv2
+import os
 
 class YoloDataset(CustomDataset):
   def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[]):
@@ -52,78 +53,81 @@ class YoloDataset(CustomDataset):
         # └── test
         #     ├── images
     """
+    assert self.dataset_name not in os.listdir(self.experimentation_dataset_path), f"Dataset {self.dataset_name} already exists."
+
     dataset_path = os.path.join(self.experimentation_dataset_path, self.dataset_name)
-    if self.dataset_name not in os.listdir(self.experimentation_dataset_path):
-      try:
-        train_ratio, val_ratio, test_ratio = DataLoaderBuilder.get_split_ratios()
-        print(f'Building dataset {self.dataset_name} in {dataset_path} by copying {len(self)} images...')
+    # TODO: static field now
+    try:
+      train_ratio, val_ratio, test_ratio = DataLoaderBuilder.get_split_ratios()
+      print(f'Building dataset {self.dataset_name} in {dataset_path} by copying {len(self)} images...')
 
-        # Create dataset folder
-        os.mkdir(dataset_path)
-        # Create subfolders
-          
-        # Calculate indices for train, val and test
-        indices = list(range(len(self)))
-        random.shuffle(indices)
-        train_size = int(train_ratio * len(self))
-        val_size = int(val_ratio * len(self))
-        test_size = len(self) - train_size - val_size
-        split = {
-          'train': indices[:train_size],
-          'val': indices[train_size:train_size+val_size],
-          'test': indices[train_size+val_size:]
-        }
+      # Create dataset folder
+      os.mkdir(dataset_path)
+      # Create subfolders
+        
+      # Calculate indices for train, val and test
+      indices = list(range(len(self)))
+      random.shuffle(indices)
+      train_size = int(train_ratio * len(self))
+      val_size = int(val_ratio * len(self))
+      test_size = len(self) - train_size - val_size
+      split = {
+        'train': indices[:train_size],
+        'val': indices[train_size:train_size+val_size],
+        'test': indices[train_size+val_size:]
+      }
 
-        subfolders = ['train', 'val', 'test']
-        for subfolder in subfolders:
-          print(f'Creating subfolder "{subfolder}" of size {len(split[subfolder])} ...')
-          os.mkdir(os.path.join(dataset_path, subfolder))
-          images_path = os.path.join(dataset_path, subfolder, 'images')
-          labels_path = os.path.join(dataset_path, subfolder, 'labels')
-          os.mkdir(images_path)
-          os.mkdir(labels_path)
+      subfolders = ['train', 'val', 'test']
+      for subfolder in subfolders:
+        print(f'Creating subfolder "{subfolder}" of size {len(split[subfolder])} ...')
+        os.mkdir(os.path.join(dataset_path, subfolder))
+        images_path = os.path.join(dataset_path, subfolder, 'images')
+        labels_path = os.path.join(dataset_path, subfolder, 'labels')
+        os.mkdir(images_path)
+        os.mkdir(labels_path)
 
-          # Copy images and create labels
-          # Note that when we get an image, we perform augmentations and get back the 
-          # augmented image and relative bboxes. Therefore, we need to copy the augmented image
-          # not, the original.
-          # However, if augmentation is [], then we don't perform any augmentation,
-          # so we can directly use shutil.copyfile
-          for i in split[subfolder]:
-            image, bboxes = self[i]['image'], self[i]['boxes']
-            image_path = self.image_paths[i]
-            image_id = os.path.basename(image_path)
-            new_image_path = os.path.join(images_path, image_id)
-            if len(self.augmentations) > 0:
-              # Write image represented by numpy tensor to new_image_path
-              cv2.imwrite(new_image_path, image)
-            else:
-              # simply copy original image
-              shutil.copyfile(image_path, new_image_path)
+        # Copy images and create labels
+        # Note that when we get an image, we perform augmentations and get back the 
+        # augmented image and relative bboxes. Therefore, we need to copy the augmented image
+        # not, the original.
+        # However, if augmentation is [], then we don't perform any augmentation,
+        # so we can directly use shutil.copyfile
+        for i in split[subfolder]:
+          image, bboxes = self[i]['image'], self[i]['boxes']
+          image_path = self.image_paths[i]
+          image_id = os.path.basename(image_path)
+          new_image_path = os.path.join(images_path, image_id)
+          if len(self.augmentations) > 0:
+            # Write image represented by numpy tensor to new_image_path
+            cv2.imwrite(new_image_path, image)
+          else:
+            # simply copy original image
+            shutil.copyfile(image_path, new_image_path)
 
-            # Create label
-            label_id = os.path.splitext(image_id)[0] + '.txt'
-            label_path = os.path.join(labels_path, label_id)
-            with open(label_path, 'w') as f:
-              for bbox in bboxes:
-                f.write(' '.join([str(round(b, 4)) for b in bbox]) + '\n')
+          # Create label
+          label_id = os.path.splitext(image_id)[0] + '.txt'
+          label_path = os.path.join(labels_path, label_id)
+          with open(label_path, 'w') as f:
+            for bbox in bboxes:
+              f.write(' '.join([str(round(b, 4)) for b in bbox]) + '\n')
 
-        # Add data_config.yaml file with Yolo Format
-        with open(os.path.join(dataset_path, 'data_config.yaml'), 'w') as f:
-          f.write(f"path: {dataset_path} \n")
-          f.write(f"train: ./train \n")
-          f.write(f"val: ./val \n")
-          f.write(f"test: ./test \n")
-          f.write(f"names: \n")
-          for class_id, class_name in self.classes.items():
-            f.write(f"  {class_id}: {class_name} \n")
-          
-      except Exception as e:
-        print(f'Error while building dataset {self.dataset_name}: {e}')
-        shutil.rmtree(dataset_path)
-        raise e
-    else:
-      print('Dataset already exists, skipping building step')
+      # Add data_config.yaml file with Yolo Format
+      config = {
+        'path': dataset_path,
+        'train': './train',
+        'val': './val',
+        'test': './test',
+        'names': self.classes,
+        'data_split': self.subfolder_sampling_ratios,
+        'augmentations': self.augmentations
+      }
+      with open(os.path.join(dataset_path, 'data_config.yaml'), 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+        
+    except Exception as e:
+      print(f'Error while building dataset {self.dataset_name}: {e}')
+      shutil.rmtree(dataset_path)
+      raise e
 
     return dataset_path
 

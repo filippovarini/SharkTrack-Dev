@@ -1,4 +1,6 @@
+from data.dataset import CustomDataset
 import json
+import yaml
 import os
 
 STD_MODEL_FOLDER = '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models'
@@ -23,6 +25,35 @@ def get_pretrained_model_path(model_name, trained_models):
     model_path = trained_models[model_name]["model_path"]
     assert os.path.exists(model_path), f"Pretrained model {model_name} does not exist."
     return model_path
+
+def setup_dataset_params(training_data):
+    """
+    Checks if dataset_name is in Dataset.experimentation_dataset_path,
+    if so, reads from the data_config.yaml file data_split, returning a dictionary 
+    and data_autmentations, returning a list
+    """
+    assert "dataset_name" in training_data, "Dataset name is missing."
+
+    dataset_params = {
+        "dataset_name": training_data["dataset_name"],
+    }
+
+    if training_data["dataset_name"] in os.listdir(CustomDataset.experimentation_dataset_path):
+        print(f"Using prebuilt dataset {training_data['dataset_name']}")
+        data_config_path = os.path.join(CustomDataset.experimentation_dataset_path, training_data["dataset_name"], "data_config.yaml")
+        with open(data_config_path, "r") as file:
+            data_config = yaml.safe_load(file)
+
+            dataset_params["datasets"] = data_config["data_split"]
+            dataset_params["augmentations"] = data_config.get("data_augmentations", [])
+            dataset_params["prebuilt"] = True
+    else:
+        print(f"No pre-existing dataset named {training_data['dataset_name']}")
+        dataset_params["datasets"] = training_data["datasets"]
+        dataset_params["augmentations"] = training_data["augmentations"]
+        dataset_params["prebuilt"] = False
+    
+    return dataset_params
 
 def construct_hyperparameters(**config):
     trained_models = load_trained_models()
@@ -49,6 +80,7 @@ def construct_hyperparameters(**config):
                 hyperparameters["pretrained_model_path"] = model_path
         hyperparameters['annotations_path'] = os.path.join(hyperparameters["model_path"], "annotations.csv")
 
+    hyperparameters["training_data"] = setup_dataset_params(config["training_data"])
     hyperparameters['pretrained'] = model_pretrained
     hyperparameters['fine_tuning'] = fine_tuning
 

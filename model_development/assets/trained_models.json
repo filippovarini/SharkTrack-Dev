@@ -1,6 +1,6 @@
 {
-    "yoloV8-medium-mvd2": {
-        "model_name": "yoloV8-medium-mvd2",
+    "yoloV8_medium_mvd2_original_preliminary": {
+        "model_name": "yoloV8_medium_mvd2_original_preliminary",
         "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/old/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt",
         "architecture": "yolov8",
         "epochs": 50,
@@ -11,7 +11,7 @@
         "model_size": "m",
         "patience": 10,
         "training_data": {
-            "name": "mvd2",
+            "dataset_name": "mvd2",
             "datasets": {
                 "rf1": 0.2,
                 "rf2": 0.35,
@@ -284,6 +284,152 @@
         "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_n_mvd2_50/best.pt",
         "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_n_mvd2_50/annotations.csv",
         "pretrained": false,
+        "fine_tuning": false
+    },
+    "yolov8_x_mvd4_200": {
+        "model_name": "yolov8_x_mvd4_200",
+        "architecture": "yolov8",
+        "epochs": 200,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "x",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "mvd4",
+            "datasets": {
+                "rf1": 1,
+                "rf2": 1,
+                "rf3": 0.15,
+                "mwitt": 1,
+                "openimagesv7": 1,
+                "sl": 1,
+                "backgrounds": 1
+            },
+            "augmentations": [
+                "Equalise",
+                "Rotate",
+                "Crop",
+                "Bbox-rotate",
+                "Cutout"
+            ]
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_x_mvd4_200/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_x_mvd4_200/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
+    },
+    "yolov8_x_mvd2_50": {
+        "model_name": "yolov8_x_mvd2_50",
+        "architecture": "yolov8",
+        "epochs": 50,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "x",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "mvd2",
+            "datasets": {
+                "rf1": 1,
+                "rf2": 1,
+                "rf3": 0.15,
+                "mwitt": 1,
+                "openimagesv7": 1,
+                "sl": 1,
+                "backgrounds": 1
+            },
+            "augmentations": [
+                "Equalise",
+                "Rotate",
+                "Crop",
+                "Bbox-rotate",
+                "Cutout"
+            ]
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_x_mvd2_50/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_x_mvd2_50/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
+    },
+    "test_yolo_dataset1": {
+        "model_name": "test_yolo_dataset1",
+        "architecture": "yolov8",
+        "epochs": 5,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "test_mvd",
+            "datasets": {
+                "rf1": 0.05,
+                "rf2": 0.05,
+                "rf3": 0.05,
+                "mwitt": 0.05,
+                "openimagesv7": 0.05,
+                "sl": 0.05,
+                "backgrounds": 0.05
+            },
+            "augmentations": [
+                "Equalise",
+                "Rotate",
+                "Crop",
+                "Bbox-rotate",
+                "Cutout"
+            ],
+            "prebuilt": true
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_dataset1/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_dataset1/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
+    },
+    "test_yolo_dataset2": {
+        "model_name": "test_yolo_dataset2",
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_dataset2/best.pt",
+        "architecture": "yolov8",
+        "epochs": 5,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "patience": 10,
+        "training_data": {
+            "dataset_name": "test_mvd2",
+            "datasets": {
+                "mwitt": 0.1
+            },
+            "augmentations": [],
+            "prebuilt": false
+        },
+        "pretrained_model_path": null,
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/test_yolo_dataset2/annotations.csv",
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "pretrained": true,
         "fine_tuning": false
     }
 }

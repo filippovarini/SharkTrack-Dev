@@ -14,6 +14,8 @@ MAX_CROP = 150
 
 
 class CustomDataset(Dataset):
+    experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
+
     def __init__(self, dataset_name, root_dir, subfolder_sampling_ratios, augmentations=[], transforms=[]):
         """
         Note:
@@ -26,8 +28,6 @@ class CustomDataset(Dataset):
           of images to sample.
         augmentations: List of albumentations augmentations to apply.
         """
-        self.experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
-
         self.subfolders = subfolder_sampling_ratios.keys()
         self.dataset_name = dataset_name
 
@@ -52,7 +52,6 @@ class CustomDataset(Dataset):
             dataset_size[folder] = original_size
             sampling_ratio = self.subfolder_sampling_ratios[folder]
             dataset_size[folder] = int(original_size * sampling_ratio)
-        print(f'Dataset size: {dataset_size}')
         return dataset_size
     
     def get_img_processor(self, idx):

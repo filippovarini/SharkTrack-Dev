@@ -47,7 +47,9 @@ class YoloV8(Architecture):
 
     # 1. Get dataset
     dataset_time = time.time()
-    data_path = dataset.build()
+    data_path = os.path.join(YoloDataset.experimentation_dataset_path, self.hyperparameters['training_data']['dataset_name'])
+    if not self.hyperparameters['training_data']['prebuilt']:
+      data_path = dataset.build()
     dataset_time = round((time.time() - dataset_time) / 60, 2)
     print(f'Dataset built in {dataset_time} minutes')
 
