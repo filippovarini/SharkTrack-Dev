@@ -221,5 +221,78 @@
         "tracker": "botsort",
         "pretrained": true,
         "fine_tuning": false
+    },
+    "yolov8_n_mvd2_50_augmentations_fixed": {
+        "model_name": "yolov8_n_mvd2_50_augmentations_fixed",
+        "architecture": "yolov8",
+        "epochs": 50,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "n",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "mvd2",
+            "datasets": {
+                "rf1": 0.19,
+                "rf2": 0.34,
+                "rf3": 0.28,
+                "mwitt": 1,
+                "openimagesv7": 1,
+                "sl": 1,
+                "backgrounds": 1
+            },
+            "augmentations": [
+                "Equalise",
+                "Rotate",
+                "Crop",
+                "Cutout"
+            ],
+            "prebuilt": false
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_n_mvd2_50_augmentations_fixed/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yolov8_n_mvd2_50_augmentations_fixed/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
+    },
+    "yoloV8_medium_mvd2_original_replica": {
+        "model_name": "yoloV8_medium_mvd2_original_replica",
+        "architecture": "yolov8",
+        "epochs": 50,
+        "batch_size": 16,
+        "img_size": 640,
+        "lr": 0.01,
+        "greyscale": false,
+        "model_size": "m",
+        "pretrained_model_path": null,
+        "patience": 10,
+        "conf_threshold": 0.2,
+        "eval_data": "eval1",
+        "iou_association_threshold": 0.5,
+        "tracker": "botsort",
+        "training_data": {
+            "dataset_name": "mvd2",
+            "datasets": {
+                "backgrounds": 1,
+                "mwitt": 1,
+                "openimagesv7": 1,
+                "rf1": 0.19,
+                "rf2": 0.34,
+                "rf3": 0.28,
+                "sl": 1
+            },
+            "augmentations": [],
+            "prebuilt": true
+        },
+        "model_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yoloV8_medium_mvd2_original_replica/best.pt",
+        "annotations_path": "/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/model_development/models/yoloV8_medium_mvd2_original_replica/annotations.csv",
+        "pretrained": false,
+        "fine_tuning": false
     }
 }

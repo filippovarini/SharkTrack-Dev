@@ -106,12 +106,12 @@ class YoloV8(Architecture):
     2. Evaluate object detection model using the out-of-distribution evaluation dataset
     3. Evaluate tracker model using the evaluation dataset
     """
-    bruvs_video_folder = self.bruvs_videos_folder if not self.hyperparameters['greyscale'] else self.greyscale_bruvs_videos_folder
-    videos = os.listdir(bruvs_video_folder)
-    assert all([video.endswith('.mp4') for video in videos])
-    annotations = os.listdir(self.bruvs_annotations_folder)
-    video_names = video_names = [vid[:-4] for vid in videos]
-    assert len(videos) == len(annotations) and all([f'{vid}.csv' in annotations for vid in video_names])
+    assert not self.hyperparameters['greyscale'], 'Greyscale evaluation not supported yet'
+    bruvs_video_folder = os.path.join(self.bruvs_val_folder, 'frames')
+    bruvs_annotations_folder = os.path.join(self.bruvs_val_folder, 'annotations')
+    video_names = os.listdir(bruvs_video_folder)
+    annotations = os.listdir(bruvs_annotations_folder)
+    assert len(video_names) == len(annotations) and all([f'{vid}.csv' in annotations for vid in video_names])
     
     # 3. Evaluate tracker
     track_start_time = time.time()
@@ -127,15 +127,15 @@ class YoloV8(Architecture):
       model_folder = os.path.dirname(self.hyperparameters['annotations_path'])
       for i, video in enumerate(video_names):
         print(f'Evaluating {video}')
-        video_path = bruvs_video_folder + video + '.mp4'
-        annotations_path = self.bruvs_annotations_folder + video + '.csv'
+        video_path = os.path.join(bruvs_video_folder, video)
+        annotations_path = os.path.join(bruvs_annotations_folder, video + '.csv')
         annotations = pd.read_csv(annotations_path)
 
-        results = self.track(video_path)
+        results = self.track_frames(video_path)
 
         # Extract and store annotations for investigation
         extracted_pred_results = self._extract_tracks(results)
-        aligned_annotations = utils.align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, self.bruvs_video_length)
+        aligned_annotations = utils.align_annotations_with_predictions(annotations, extracted_pred_results, self.bruvs_video_length)
         aligned_annotations['frame_id'] = [i for i in range(len(aligned_annotations['gt_bbox_xyxys']))]
         aligned_annotations_df = pd.DataFrame(aligned_annotations)
         aligned_annotations_path = self.hyperparameters['annotations_path']
@@ -153,27 +153,53 @@ class YoloV8(Architecture):
       macro_mota = round(np.mean(motas), 2)
       macro_motp = round(np.mean(motps), 2)
       macro_idf1 = round(np.mean(idf1s), 2)
-      # TODO: construct average performance graph for each video! (or image of 6 combined)
 
     track_end_time = time.time()
     track_time = round((track_end_time - track_start_time) / 60, 2)
 
     return macro_mota, macro_motp, macro_idf1, track_time, utils.get_torch_device()#, performance_plot
-
-  def track(self, video_path):
+  
+  def track_frames(self, frame_sequence_path):
+    print(f'Tracking frames in {frame_sequence_path} with tracker {str(self.tracker)}...')
     assert self.tracker is not None
     assert str(self.tracker) in ['botsort.yaml', 'bytetrack.yaml']
 
-    results = self.model.track(
-      source=video_path,
-      persist=True,
-      conf=self.hyperparameters['conf_threshold'],
-      iou=self.hyperparameters['iou_association_threshold'],
-      imgsz=self.hyperparameters['img_size'],
-      tracker=str(self.tracker),
-      verbose=False
-    )
-    return results
+    # Ensure the path exists
+    assert os.path.exists(frame_sequence_path), "Image sequence path does not exist"
+    all_files = os.listdir(frame_sequence_path)
+    image_files = [file for file in all_files if file.endswith('.jpg')]
+    image_files = sorted(image_files, key=lambda x: int(x.replace('frame', '').replace('.jpg', '')))  # Sort the files to ensure correct order
+    assert len(image_files) > 0, "No images found in the path"
+
+    # Placeholder for aggregated results
+    aggregated_results = []
+    print(self.hyperparameters['conf_threshold'])
+    for image_file in image_files:
+        image_path = os.path.join(frame_sequence_path, image_file)
+        # Process each image with the model
+        results = self.model.track(
+            source=image_path,
+            persist=True,  # Assume we don't need to persist individual image results
+            conf=0.5,
+            iou=self.hyperparameters['iou_association_threshold'],
+            imgsz=self.hyperparameters['img_size'],
+            tracker=str(self.tracker),
+            verbose=False
+        )
+        
+        # Convert and aggregate results
+        assert len(results) == 1, "Expected only one result"
+        result = results[0]
+        result.plot()
+        bbox_xyxy = result.boxes.xyxy.tolist()
+        confidence = result.boxes.conf.tolist()
+        track_id = result.boxes.id.int().tolist() if result.boxes.id is not None else []
+        print(f'Frame {image_file} - {len(bbox_xyxy)} detections,tracks: {track_id}')
+        # assert len(bbox_xyxy) == len(confidence), "Length of bbox_xyxy and confidence must be the same"
+        # assert len(bbox_xyxy) == len(track_id), "Length of bbox_xyxy and track_id must be the same"
+        aggregated_results.append({'boxes': {'xyxy': bbox_xyxy, 'conf': confidence, 'id': track_id}})
+
+    return aggregated_results
     
   def _extract_tracks(self, results):
     """
@@ -188,10 +214,9 @@ class YoloV8(Architecture):
       bbox_xyxy = []
       confidence = []
       track_id = []
-      if results[i].boxes.id is not None:
-        bbox_xyxy = results[i].boxes.xyxy.tolist()
-        confidence = results[i].boxes.conf.tolist()
-        track_id = results[i].boxes.id.tolist()
+      bbox_xyxy = results[i]['boxes']['xyxy']
+      confidence = results[i]['boxes']['conf']
+      track_id = results[i]['boxes']['id']
 
       bbox_xyxys.append(bbox_xyxy)
       confidences.append(confidence)

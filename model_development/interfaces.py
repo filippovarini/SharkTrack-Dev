@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 
 class Architecture(ABC):
     """
@@ -8,9 +9,9 @@ class Architecture(ABC):
     """
     def __init__(self):
         super().__init__()
-        self.bruvs_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/videos/'
-        self.greyscale_bruvs_videos_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/greyscale_videos/'
-        self.bruvs_annotations_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/sharktrack_test/annotations/'
+        self.bruvs_val_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/validation/val2/'
+        assert 'frames' in os.listdir(self.bruvs_val_folder), 'The folder should contain a folder called frames'
+        assert 'annotations' in os.listdir(self.bruvs_val_folder), 'The folder should contain a folder called annotations'
         self.bruvs_annotation_fps = 1
         self.bruvs_video_length = 20
 
@@ -34,7 +35,7 @@ class Architecture(ABC):
         pass
     
     @abstractmethod
-    def track(self, tracker_model):
+    def track_frames(self, tracker_model):
         """ Runs the tracker model on top of the object detection model."""
         pass
 

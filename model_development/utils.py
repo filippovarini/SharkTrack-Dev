@@ -1,68 +1,61 @@
 import torch
 import matplotlib.pyplot as plt
 
-def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
-    """
-    Correctly aligns ground truth annotations with predicted data from an object tracking model.
-    Each row in the annotations represents a detection, not necessarily a frame.
+import pandas as pd
 
-    :param annotations: DataFrame with ground truth annotations.
-    :param track_predictions: List of predictions in the format [[bbox_xyxy], [confidences], [track_ids]]
+import pandas as pd
+
+def align_annotations_with_predictions(annotations, track_predictions, video_length):
+    """
+    Aligns ground truth annotations with predicted data from an object tracking model efficiently.
+    
+    :param annotations: DataFrame with ground truth annotations, containing columns ['frame_id', 'track_id', 'xmin', 'ymin', 'xmax', 'ymax'].
+    :param track_predictions: List of predictions in the format [[bbox_xyxy], [confidences], [track_ids]].
     :param video_length: Length of the video in seconds.
-    :return: List of aligned data in dictionary format.
+    :return: Dictionary of aligned data.
     """
-    # Ground truth frame rate is given as 10 FPS
-    gt_frame_rate = 10
-    tot_annotation_frames = gt_frame_rate * video_length
+    # Constants
+    GT_FRAME_RATE = 10  # Ground truth frame rate
+    gt_frames = GT_FRAME_RATE * video_length
+    pred_frames = len(track_predictions[0])
+    pred_frame_rate = pred_frames / video_length
 
-    # Calculate the predicted frame rate
-    tot_pred_frames = len(track_predictions[0])
-    pred_frame_rate = tot_pred_frames / video_length
-
-    assert tot_annotation_frames <= tot_pred_frames # orig video > 10fps
-
-    # Initialize the output list
-    results = {
-        "gt_bbox_xyxys": [],
-        "gt_track_ids": [],
-        "pred_bbox_xyxys": [],
-        "pred_confidences": [],
-        "pred_track_ids": []
+    # Initialize results dictionary
+    aligned_data = {
+        "gt_bbox_xyxys": [], "gt_track_ids": [],
+        "pred_bbox_xyxys": [], "pred_confidences": [], "pred_track_ids": []
     }
 
+    # Determine alignment strategy based on frame rates
+    frame_rate_ratio = pred_frame_rate / GT_FRAME_RATE
+    min_frames = min(gt_frames, pred_frames)
 
-    for frame_num in range(tot_annotation_frames):
-        ### GET PRED FRAME TRACKS
-        # Calculate the corresponding frame in the predictions
-        pred_frame_index = int(round(frame_num * pred_frame_rate / gt_frame_rate))
-        assert pred_frame_index < tot_pred_frames
+    for frame_num in range(min_frames):
+        if pred_frame_rate >= GT_FRAME_RATE:
+            pred_index = int(round(frame_num * frame_rate_ratio))
+            gt_index = frame_num
+        else:
+            gt_index = int(round(frame_num / frame_rate_ratio))
+            pred_index = frame_num
 
-        # Extract predicted data for the corresponding frame
-        pred_bbox_xyxys = track_predictions[0][pred_frame_index]
-        pred_confidences = track_predictions[1][pred_frame_index]
-        pred_track_ids = track_predictions[2][pred_frame_index]
-
-        ### GET GT FRAME TRACKS
-        # Filter annotations dataframe that has frame_id = frame_num
-        frame_annotations = annotations[annotations["frame_id"] == frame_num]
-
-        # Extract ground truth data for the corresponding frame
-        gt_track_ids = frame_annotations["track_id"].values.tolist()
+        # Ground Truth Data
+        frame_annotations = annotations[annotations["frame_id"] == gt_index]
+        gt_track_ids = frame_annotations["track_id"].tolist()
         gt_bbox_xyxys = frame_annotations[["xmin", "ymin", "xmax", "ymax"]].values.tolist()
 
-        results["gt_bbox_xyxys"].append(gt_bbox_xyxys)
-        results["gt_track_ids"].append(gt_track_ids)
-        results["pred_bbox_xyxys"].append(pred_bbox_xyxys)
-        results["pred_confidences"].append(pred_confidences)
-        results["pred_track_ids"].append(pred_track_ids)
+        # Prediction Data
+        pred_bbox_xyxys = track_predictions[0][pred_index]
+        pred_confidences = track_predictions[1][pred_index]
+        pred_track_ids = track_predictions[2][pred_index]
 
-    assert len(results["gt_bbox_xyxys"]) == tot_annotation_frames
-    assert len(results["gt_track_ids"]) == tot_annotation_frames
-    assert len(results["pred_bbox_xyxys"]) == tot_annotation_frames
-    assert len(results["pred_confidences"]) == tot_annotation_frames
-    assert len(results["pred_track_ids"]) == tot_annotation_frames
+        # Store aligned data
+        aligned_data["gt_bbox_xyxys"].append(gt_bbox_xyxys)
+        aligned_data["gt_track_ids"].append(gt_track_ids)
+        aligned_data["pred_bbox_xyxys"].append(pred_bbox_xyxys)
+        aligned_data["pred_confidences"].append(pred_confidences)
+        aligned_data["pred_track_ids"].append(pred_track_ids)
 
-    return results
+    return aligned_data
 
 def calculate_iou(box_a, box_b):
     # Calculate the (x, y)-coordinates of the intersection rectangle
@@ -110,6 +103,8 @@ def evaluate_tracking(results, S_TRESH):
         total_ground_truth += len(gt_bboxes)
         frame_tot_iou = 0
 
+        print(gt_ids, pred_ids, gt_bboxes, pred_bboxes)
+
         matches = {}  # Maps ground truth IDs to predicted IDs for this frame
 
         # Find matches and calculate mismatches
@@ -125,6 +120,7 @@ def evaluate_tracking(results, S_TRESH):
                     best_pred_idx = j
 
             if best_pred_idx != -1:
+                print(best_pred_idx, pred_ids)
                 pred_id = pred_ids[best_pred_idx]
                 matches[gt_id] = pred_id
                 frame_tot_iou += best_iou
