@@ -10,7 +10,7 @@ import cv2
 import os
 
 ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Bbox-rotate", "Cutout"]
-
+MAX_CROP = 200
 
 class CustomDataset(Dataset):
     experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
@@ -141,7 +141,7 @@ class CustomDataset(Dataset):
         if 'Rotate' in self.augmentations:
             standard_augmentations.append(A.Rotate(limit=90, p=p))
         if 'Crop' in self.augmentations:
-            standard_augmentations.append(A.RandomCrop(p=p, height=self.img_size, width=self.img_size))
+            standard_augmentations.append(A.RandomCrop(p=p, height=MAX_CROP, width=MAX_CROP))
 
         albumentation_pipeline = A.Compose(standard_augmentations, bbox_params=bbox_params)
 

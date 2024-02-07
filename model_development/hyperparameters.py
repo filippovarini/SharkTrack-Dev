@@ -64,7 +64,7 @@ def construct_hyperparameters(**config):
     fine_tuning = not model_pretrained and config["pretrained_model_path"] is not None
 
     if model_pretrained:
-        assert config["pretrained_model_path"] is None, "Pretrained model path is not required."
+        assert config.get("pretrained_model_path", None) is None, "Pretrained model path is not required."
         model_train_params = trained_models[hyperparameters["model_name"]]
         assert model_train_params is not None and check_required_params(model_train_params, REQUIRED_TRAIN_PARAMS), "Missing required training parameters."
         hyperparameters.update({param: model_train_params[param] for param in REQUIRED_TRAIN_PARAMS})

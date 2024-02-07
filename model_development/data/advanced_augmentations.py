@@ -3,17 +3,16 @@ from data.image_processor import ImageProcessor
 import numpy as np
 import cv2
 
-def apply_custom_cutout(image, bboxes, fill_color=(130, 160, 160)):
+def apply_custom_cutout(image, bboxes):
     """
     Applies cutout on the bounding box, to simulate occlusion.
 
     :param image: A numpy array representing the RGB image.
     :param bboxes: A list of bounding boxes in relative coordinates (xmin, ymin, xmax, ymax).
-    :param max_height: Maximum height of the cutout.
-    :param max_width: Maximum width of the cutout.
-    :param fill_color: RGB color for the cutout area.
-    :return: Augmented image.
     """
+    # Calculate fill_color as the mean of the image (image is in RGB) and so is the fill_color
+    fill_color = tuple(np.mean(image, axis=(0, 1)).astype(int))
+
     h, w = image.shape[:2]
     bbox_index = np.random.randint(0, len(bboxes)) # pick a random bbox to apply cutout to
     bbox = bboxes[bbox_index]
