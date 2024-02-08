@@ -11,7 +11,7 @@ class Viame(Annotation):
     return [xmin, ymin, xmax, ymax]
   
   def get_frame_id(self, row, source):
-    id = f"{source}_frame{int(row['3: Unique Frame Identifier'])*29}.jpg"
+    id = f"{source}_frame{int(row['3: Unique Frame Identifier'])*30}.jpg"
     return id
   
   def get_track_id(self, row):
