@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader, random_split
 from data.dataset import Dataset
 
-TRAIN_RATIO = 0.8
-VAL_RATIO = 0.2
+TRAIN_RATIO = 0.0
+VAL_RATIO = 1 # validate with out-of-sample data
 TEST_RATIO = 0.0 # test with out-of-sample data
 
 class DataLoaderBuilder():
