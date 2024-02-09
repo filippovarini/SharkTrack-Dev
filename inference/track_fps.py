@@ -17,11 +17,12 @@ params = {
   'imgsz': 640,
   'tracker': 'botsort.yaml',
   'annotation_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/annotations/test',
-  'video_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_NOV23/AXA_2023-1790611',
-  'desired_fps': 10,
+  'video_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/test',
+  'desired_fps': 5,
 }
 
 videos = os.listdir(params['video_folder'])
+videos = ['no_streams.mp4']
 
 start_time = time.time()
 
