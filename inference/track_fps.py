@@ -7,7 +7,7 @@ from pathlib import Path
 # Since we are importing a file in a super directory, we need to add the root directory to sys.path
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
-from utils import track_history_to_csv
+from annotations.inference import track_history_to_csv
 
 params = {
   'model_path': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/old/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt',
@@ -61,7 +61,7 @@ for video in videos:
     if i % frame_skip != 0:
       continue
     frame_count += 1
-    
+
     print(f"\rProcessing frame {frame_count}", end='')
 
     # Run YOLOv8 tracking on the frame, persisting tracks between frames
@@ -90,10 +90,9 @@ for video in videos:
 
   print('\n')
   print(f'processed {frame_count} frames')
-  print(f'total frames: {i}')
   
   assert len(track_history['pred_bbox_xyxys']) == len(track_history['pred_confidences']) == len(track_history['pred_track_ids']), 'Lengths do not match'
-  track_history_to_csv(track_history, video, params['annotation_folder'])
+  track_history_to_csv(track_history, video, params['annotation_folder'], params['desired_fps'])
 
   # Release the video capture object for the current video
   cap.release()

@@ -1,13 +1,18 @@
-import torch
 import matplotlib.pyplot as plt
+import pandas as pd
+import torch
+import os
 
 def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
     """
     Correctly aligns ground truth annotations with predicted data from an object tracking model.
     Each row in the annotations represents a detection, not necessarily a frame.
 
-    :param annotations: DataFrame with ground truth annotations.
-    :param track_predictions: List of predictions in the format [[bbox_xyxy], [confidences], [track_ids]]
+    :param annotations: DataFrame with ground truth annotations. It must have the following columns:
+                        - frame_id: Frame number
+                        - track_id: Unique ID for the track
+                        - xmin, ymin, xmax, ymax: Bounding box coordinates
+    :param track_predictions: List of predictions in the format [[bbox_xyxy], [confidences], [track_ids]] for each frame
     :param video_length: Length of the video in seconds.
     :return: List of aligned data in dictionary format.
     """
@@ -189,7 +194,6 @@ def plot_performance_graph(aligned_annotations, motp_per_frame):
     ax.legend()
 
     return fig
-
 
 def get_torch_device():
     """
