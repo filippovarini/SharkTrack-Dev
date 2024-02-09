@@ -39,7 +39,8 @@ def track_history_to_csv(track_history, video_name, output_folder, track_fps):
     viame_df = track_history_to_viame(df, track_fps)
 
     # Save the DataFrame to a CSV file
-    csv_file_path = os.path.join(output_folder, f"{video_name}_track_history.csv")
+    video_name = os.path.splitext(video_name)[0]
+    csv_file_path = os.path.join(output_folder, f"{video_name}_tracks_{track_fps}fps.csv")
     viame_df.to_csv(csv_file_path, index=False)
 
     print(f"Data saved to {csv_file_path}.")

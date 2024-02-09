@@ -3,6 +3,7 @@ import cv2
 import os
 import sys
 from pathlib import Path
+import time
 
 # Since we are importing a file in a super directory, we need to add the root directory to sys.path
 root_dir = Path(__file__).resolve().parent.parent
@@ -16,15 +17,18 @@ params = {
   'imgsz': 640,
   'tracker': 'botsort.yaml',
   'annotation_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/annotations/test',
-  'video_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/validation/val1/videos',
-  'desired_fps': 1,
+  'video_folder': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_NOV23/AXA_2023-1790611',
+  'desired_fps': 10,
 }
 
 videos = os.listdir(params['video_folder'])
-videos = ['easy1.mp4']
 
-for video in videos:
+start_time = time.time()
+
+for video in videos[:1]:
   print(f"Processing video {video}")
+
+  video_start_time = time.time()
 
   video_path = os.path.join(params['video_folder'], video)
   assert os.path.exists(video_path), 'Video file does not exist'
@@ -90,9 +94,12 @@ for video in videos:
 
   print('\n')
   print(f'processed {frame_count} frames')
+  print(f'video processing time: {time.time() - video_start_time}')
   
   assert len(track_history['pred_bbox_xyxys']) == len(track_history['pred_confidences']) == len(track_history['pred_track_ids']), 'Lengths do not match'
   track_history_to_csv(track_history, video, params['annotation_folder'], params['desired_fps'])
 
   # Release the video capture object for the current video
   cap.release()
+
+print(f'Total time: {time.time() - start_time}')
