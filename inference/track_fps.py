@@ -97,9 +97,50 @@ def track_folder_videos(params):
 
 if __name__ == '__main__':
   base_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_NOV23_no_streams'
+
+  first_batch = [
+    'AXA_2023-1900711',
+    'AXA_2023-1810611',
+    'AXA_2023-1860611',
+    'AXA_2023-1970711',
+    'AXA_2023-1880611',
+    'AXA_2023-2131011',
+    'AXA_2023-1990711',
+    'AXA_2023-2070711',
+    'AXA_2023-2000711',
+    'AXA_2023-1980711',
+    'AXA_2023-2121011',
+    'AXA_2023-1870611',
+    'AXA_2023-1960711',
+    'AXA_2023-1910711',
+    'AXA_2023-2010711',
+    'AXA_2023-2060711',
+    'AXA_2023-2080711'
+  ]
+
+  second_batch = [
+    'AXA_2023-1890711',
+    'AXA_2023-2050711',
+    'AXA_2023-2020711',
+    'AXA_2023-2091011',
+    'AXA_2023-2111011',
+    'AXA_2023-1920711',
+    'AXA_2023-1830611',
+    'AXA_2023-1840611',
+    'AXA_2023-1950711',
+    'AXA_2023-2030711',
+    'AXA_2023-1790611',
+    'AXA_2023-2040711',
+    'AXA_2023-1850611',
+    'AXA_2023-1940711',
+    'AXA_2023-1930711',
+    'AXA_2023-1820611',
+    'AXA_2023-2101011'
+  ]
+
   start_time = time.time()
-  for folder in os.listdir(base_path):
-    if folder == 'AXA_2023-1790611':
+  for folder in second_batch:
+    # if folder == 'AXA_2023-1790611':
       print(f'Processing folder {folder}...')
       video_folder = os.path.join(base_path, folder)
       params = {
