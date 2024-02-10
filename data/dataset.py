@@ -9,7 +9,7 @@ import torch
 import cv2
 import os
 
-ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Bbox-rotate", "Cutout"]
+ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Cutout"]
 MAX_CROP = 200
 
 class CustomDataset(Dataset):
@@ -60,6 +60,15 @@ class CustomDataset(Dataset):
         image_id = os.path.basename(img_path)
         return ImageProcessor(image_folder), image_id
     
+    def _is_bbox_relative(self, idx, bboxes=None):
+        if bboxes:
+            if not isinstance(bboxes, np.ndarray):
+                bboxes = np.array(bboxes)
+            return np.all((bboxes >= 0) & (bboxes <= 1))
+        else:
+            image_processor, image_id = self.get_img_processor(idx)
+            return image_processor.is_bbox_relative(image_id)
+    
     def plot_single_image(self, idx):
         image_processor, image_id = self.get_img_processor(idx)
         print(image_id)
@@ -72,9 +81,15 @@ class CustomDataset(Dataset):
             annotation = self[i]
             img = annotation['image']
             bboxes = annotation['bboxes']
+            # print(f'returned by self[] {i}, {bboxes}')
+            # if self._is_bbox_relative(i, bboxes):
+            #     print(f'denormalising {i}, {bboxes}')
+            #     bboxes = ImageProcessor.denormalise_bbox(bboxes, img)
+            # print(f'after denormalisation {i}, {bboxes}')
             boxed_images.append(ImageProcessor.draw_rect(img, bboxes))
 
         save_fig = model_folder is not None
+
         fig = ImageProcessor.plot_multiple_img(
             boxed_images,
             [str(s) for s in sample],
@@ -158,6 +173,7 @@ class CustomDataset(Dataset):
         # box, so we can run them only if the image has bounding boxes.
         if 'Cutout' in self.augmentations and np.random.rand() < p and len(aug_bboxes) > 0:
             assert all([np.any(np.array(bbox) > 1) for bbox in aug_bboxes]), 'Bbox coordinates must not be normalised'
+            print('cutout')
             aug_img, aug_bboxes = apply_custom_cutout(aug_img, bboxes=aug_bboxes)
 
         assert type(aug_bboxes) == np.ndarray, 'Bboxes should be a numpy array'
@@ -191,11 +207,14 @@ class CustomDataset(Dataset):
         image = self._apply_transforms(image)
         
         bboxes = image_processor.read_bboxes(image_id)
+        # print(f'{idx}, {bboxes}')
         if image_processor.is_bbox_relative(image_id):
             bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
         if len(self.augmentations) > 0:
             aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes
+            # print(f'augmented {idx}, {bboxes}')
+            assert len(bboxes) == 0 or np.array(bboxes).shape[1] == 4, 'Bboxes should be in pascal-voc format'
 
         return {"image": image, "bboxes": bboxes}
