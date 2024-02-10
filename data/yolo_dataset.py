@@ -79,7 +79,7 @@ class YoloDataset(CustomDataset):
 
       subfolders = ['train', 'val', 'test']
       for subfolder in subfolders:
-        print(f'Creating subfolder "{subfolder}" of size {len(split[subfolder])} ...')
+        print(f'Creating subfolder "{subfolder}" of size {len(split[subfolder])} ... (if >10% background, the size will be smaller)')
         os.mkdir(os.path.join(dataset_path, subfolder))
         images_path = os.path.join(dataset_path, subfolder, 'images')
         labels_path = os.path.join(dataset_path, subfolder, 'labels')
@@ -98,6 +98,13 @@ class YoloDataset(CustomDataset):
           image_path = self.image_paths[i]
           image_id = os.path.basename(image_path)
           new_image_path = os.path.join(images_path, image_id)
+
+          if len(bboxes) == 0:
+            # Only keep 10% of images with no bboxes (background)
+            # as described here: https://docs.ultralytics.com/yolov5/tutorials/tips_for_best_training_results/
+            if random.random() > 0.1:
+              continue
+
           if len(self.augmentations) > 0:
             # Write image represented by numpy tensor to new_image_path
             cv2.imwrite(new_image_path, image)
