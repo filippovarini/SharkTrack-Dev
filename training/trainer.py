@@ -1,13 +1,19 @@
 from ultralytics import YOLO
-from evaluation.evaluate_yolo_tracker import evaluate
 import pandas as pd
 import wandb
 import os
+import sys
+from pathlib import Path
+
+# Since we are importing a file in a super directory, we need to add the root directory to sys.path
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_dir))
+from evaluation.evaluate_yolo_tracker import evaluate
 
 params = {
-  'name': 'phase2_m_200_pretrained',
+  'name': 'p2_m_200_new_valbalanced',
   'model_size': 'm',
-  'pretrained_model': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/old/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt',
+  'pretrained_model': None,
   'epochs': 200,
   'imgsz': 640,
   'patience': 10,
