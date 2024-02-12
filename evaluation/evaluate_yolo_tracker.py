@@ -6,6 +6,20 @@ import os
 import time 
 
 BRUVS_VIDEO_LENGTH = 20
+VAL_VIDEOS = [
+  'val1_medium1',
+  'gfp_bahamas1',
+  'gfp_palau1',
+  'shlife_scalloped2',
+  'gfp_polynesia1',
+  'shlife_bull6',
+  'gfp_maldives1',
+  'gfp_rand5',
+  'gfp_barbados1',
+  'gfp_solomon1',
+  'val1_easy2',
+  'gfp_kiribati1'
+]
 
 def track(model_path, video_path, conf, iou, imgsz, tracker):
   assert tracker in ['botsort.yaml', 'bytetrack.yaml']
