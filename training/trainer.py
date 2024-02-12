@@ -11,13 +11,14 @@ sys.path.append(str(root_dir))
 from evaluation.evaluate_yolo_tracker import evaluate
 
 params = {
-  'name': 'p2_m_200_new_valbalanced',
+  'name': 'p2v4_new_1000e',
   'model_size': 'm',
   'pretrained_model': None,
-  'epochs': 200,
+  # 'pretrained_model': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/old/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt',
+  'epochs': 1000,
   'imgsz': 640,
-  'patience': 10,
-  'data_yaml': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets/phase2_no_augs/data_config.yaml',
+  'patience': 100,
+  'data_yaml': '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets/p2v4/data_config.yaml',
   'project_folder': 'models',
 
   "iou_association_threshold": 0.5,
@@ -36,6 +37,7 @@ model.train(
   name=params['name'],
   project = params['project_folder'],
   verbose=True,
+  save_period=50
 )
 
 

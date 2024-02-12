@@ -10,7 +10,6 @@ import cv2
 import os
 
 ALLOWED_AUGMENTATIONS = ["Equalise", "Rotate", "Crop", "Cutout"]
-MAX_CROP = 200
 
 class CustomDataset(Dataset):
     experimentation_dataset_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/experimentation_datasets'
@@ -156,7 +155,9 @@ class CustomDataset(Dataset):
         if 'Rotate' in self.augmentations:
             standard_augmentations.append(A.Rotate(limit=90, p=p))
         if 'Crop' in self.augmentations:
-            standard_augmentations.append(A.RandomCrop(p=p, height=MAX_CROP, width=MAX_CROP))
+            h = img.shape[0]
+            w = img.shape[1]
+            standard_augmentations.append(A.RandomCrop(p=p, height=int(h*0.8), width=int(w * 0.8)))
 
         albumentation_pipeline = A.Compose(standard_augmentations, bbox_params=bbox_params)
 
@@ -211,10 +212,10 @@ class CustomDataset(Dataset):
         if image_processor.is_bbox_relative(image_id):
             bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
+        print(idx)
         if len(self.augmentations) > 0:
             aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes
-            # print(f'augmented {idx}, {bboxes}')
             assert len(bboxes) == 0 or np.array(bboxes).shape[1] == 4, 'Bboxes should be in pascal-voc format'
 
         return {"image": image, "bboxes": bboxes}

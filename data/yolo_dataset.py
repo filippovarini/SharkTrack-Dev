@@ -102,7 +102,8 @@ class YoloDataset(CustomDataset):
           if len(bboxes) == 0:
             # Only keep 10% of images with no bboxes (background)
             # as described here: https://docs.ultralytics.com/yolov5/tutorials/tips_for_best_training_results/
-            if random.random() > 0.1:
+            # We have 3.9k shark images and 2.8 background. We want 390 background -> 14%
+            if random.random() > 0.14:
               continue
 
           if len(self.augmentations) > 0:
