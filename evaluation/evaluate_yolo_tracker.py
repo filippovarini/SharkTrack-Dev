@@ -63,6 +63,20 @@ def extract_tracks(results):
 
   return [bbox_xyxys, confidences, track_ids]
 
+
+def get_frame_sequences(frames_folder):
+  frame_sequences = {}
+  annotations = {}
+
+  for video in VAL_VIDEOS:
+    sequence = [f for f in os.path.listdir(os.path.join(frames_folder, video)) if f.endswith('.jpg')]
+    sequence.sort(key=lambda x: int(x.split('_')[-1].split('.')[0].replace('frame', '')))
+    frame_sequences[video] = sequence
+    annotations[video] = os.path.join(frames_folder, video, 'annotations.csv')
+  
+  return frame_sequences, annotations
+
+
  
 def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
   """
@@ -70,17 +84,11 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
   2. Evaluate object detection model using the out-of-distribution evaluation dataset
   3. Evaluate tracker model using the evaluation dataset
   """
-  bruvs_video_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/validation/val1/videos/'
-  bruvs_annotations_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/validation/val1/annotations_viame/'
+  frames_folder = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2/'
   
-  videos = os.listdir(bruvs_video_folder)
-  annotations = os.listdir(bruvs_annotations_folder)
-  video_names = video_names = [vid[:-4] for vid in videos]
+  frame_sequences, annotations = get_frame_sequences(frames_folder)
+  assert sorted(frame_sequences.keys()) == sorted(annotations.keys()), f'frame sequences and annotations must be the same {frame_sequences}, {annotations}'
 
-  assert all([video.endswith('.mp4') for video in videos])
-  assert len(videos) == len(annotations) and all([f'{vid}.csv' in annotations for vid in video_names])
-  
-  # 3. Evaluate tracker
   # macro average
   motas = []
   motps = []
@@ -92,15 +100,13 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
 
   track_start_time = time.time()
   
-  for i, video in enumerate(video_names):
-    video_path = bruvs_video_folder + video + '.mp4'
-    annotations_path = bruvs_annotations_folder + video + '.csv'
-
+  for video in frame_sequences:
+    annotations_path = annotations[video]
     annotations = pd.read_csv(annotations_path)
     
-    print(f'Evaluating {video_path}')
+    print(f'Evaluating {video}...')
     
-    results = track(model_path, video_path, conf, iou, imgsz, tracker)
+    results = track(model_path, frame_sequences[video], conf, iou, imgsz, tracker)
 
     # Extract and store annotations for investigation
     extracted_pred_results = extract_tracks(results)
