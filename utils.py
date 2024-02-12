@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 import os
 
-def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
+def align_annotations_with_predictions_dict_corrected(annotations, track_predictions):
     """
     Correctly aligns ground truth annotations with predicted data from an object tracking model.
     Each row in the annotations represents a detection, not necessarily a frame.
@@ -16,56 +16,32 @@ def align_annotations_with_predictions_dict_corrected(annotations, track_predict
     :param video_length: Length of the video in seconds.
     :return: List of aligned data in dictionary format.
     """
-    # Ground truth frame rate is given as 10 FPS
-    gt_frame_rate = 10
-    tot_annotation_frames = gt_frame_rate * video_length
-
-    # Calculate the predicted frame rate
-    tot_pred_frames = len(track_predictions[0])
-    pred_frame_rate = tot_pred_frames / video_length
-
-    assert tot_annotation_frames <= tot_pred_frames # orig video > 10fps
-
     # Initialize the output list
     results = {
         "gt_bbox_xyxys": [],
         "gt_track_ids": [],
-        "pred_bbox_xyxys": [],
-        "pred_confidences": [],
-        "pred_track_ids": []
+        "pred_bbox_xyxys": track_predictions[0],
+        "pred_confidences": track_predictions[1],
+        "pred_track_ids": track_predictions[2]
     }
 
+    assert len(track_predictions[0]) == len(track_predictions[1]) == len(track_predictions[2]), "Predictions must have the same length"
 
-    for frame_num in range(tot_annotation_frames):
-        ### GET PRED FRAME TRACKS
-        # Calculate the corresponding frame in the predictions
-        pred_frame_index = int(round(frame_num * pred_frame_rate / gt_frame_rate))
-        assert pred_frame_index < tot_pred_frames
-
-        # Extract predicted data for the corresponding frame
-        pred_bbox_xyxys = track_predictions[0][pred_frame_index]
-        pred_confidences = track_predictions[1][pred_frame_index]
-        pred_track_ids = track_predictions[2][pred_frame_index]
-
-        ### GET GT FRAME TRACKS
-        # Filter annotations dataframe that has frame_id = frame_num
+    for frame_num in range(len(track_predictions[0])):
         frame_annotations = annotations[annotations["frame_id"] == frame_num]
-
-        # Extract ground truth data for the corresponding frame
         gt_track_ids = frame_annotations["track_id"].values.tolist()
         gt_bbox_xyxys = frame_annotations[["xmin", "ymin", "xmax", "ymax"]].values.tolist()
 
         results["gt_bbox_xyxys"].append(gt_bbox_xyxys)
         results["gt_track_ids"].append(gt_track_ids)
-        results["pred_bbox_xyxys"].append(pred_bbox_xyxys)
-        results["pred_confidences"].append(pred_confidences)
-        results["pred_track_ids"].append(pred_track_ids)
+        
+    assert len(results["gt_bbox_xyxys"]) ==  \
+        len(results["gt_track_ids"]) ==  \
+    len(results["pred_bbox_xyxys"]) ==  \
+    len(results["pred_confidences"]) ==  \
+    len(results["pred_track_ids"]), f"All lists must have the same length gt_bbox: {len(results['gt_bbox_xyxys'])}, gt_track: {len(results['gt_track_ids'])}, pred_bbox: {len(results['pred_bbox_xyxys'])}, pred_conf: {len(results['pred_confidences'])}, pred_track: {len(results['pred_track_ids'])}"
 
-    assert len(results["gt_bbox_xyxys"]) == tot_annotation_frames
-    assert len(results["gt_track_ids"]) == tot_annotation_frames
-    assert len(results["pred_bbox_xyxys"]) == tot_annotation_frames
-    assert len(results["pred_confidences"]) == tot_annotation_frames
-    assert len(results["pred_track_ids"]) == tot_annotation_frames
+    print(results)
 
     return results
 

@@ -12,7 +12,6 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 from utils import align_annotations_with_predictions_dict_corrected, evaluate_tracking, get_torch_device
 
-BRUVS_VIDEO_LENGTH = 20
 VAL_VIDEOS = [
   'val1_medium1',
   'gfp_bahamas1',
@@ -79,6 +78,8 @@ def track(model_path, frames_folder, conf, iou, imgsz, tracker):
     pred_confidences.append(confidences[:pred_idx])
     pred_track_ids.append(track_ids[:pred_idx])
 
+  print('\n')
+
   return [pred_bboxes, pred_confidences, pred_track_ids]
   
 
@@ -133,16 +134,17 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
     i+=1
     frames_folder = os.path.join(DATASET_PATH, sequence)
     annotations_path = os.path.join(frames_folder, 'annotations.csv')
-    annotations = pd.read_csv(annotations_path)
+    annotations_df = pd.read_csv(annotations_path)
     
     print(f'Evaluating {sequence}...')
     
     results = track(model_path, frames_folder, conf, iou, imgsz, tracker)
 
-    # Extract and store annotations for investigation
+    # Extract and store annotations_df for investigation
     # extracted_pred_results = extract_tracks(results)
     extracted_pred_results = results
-    aligned_annotations = align_annotations_with_predictions_dict_corrected(annotations, extracted_pred_results, BRUVS_VIDEO_LENGTH)
+    print(results)
+    aligned_annotations = align_annotations_with_predictions_dict_corrected(annotations_df, extracted_pred_results)
     aligned_annotations['frame_id'] = [i for i in range(len(aligned_annotations['gt_bbox_xyxys']))]
     aligned_annotations_df = pd.DataFrame(aligned_annotations)
     aligned_annotations_path = os.path.join(project_path, 'annotatinos.csv')
