@@ -212,7 +212,6 @@ class CustomDataset(Dataset):
         if image_processor.is_bbox_relative(image_id):
             bboxes = ImageProcessor.denormalise_bbox(bboxes, image)
 
-        print(idx)
         if len(self.augmentations) > 0:
             aug_img, aug_bboxes = self._augment(image, bboxes)
             image, bboxes = aug_img, aug_bboxes

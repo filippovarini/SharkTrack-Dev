@@ -10,9 +10,8 @@ class Viame(Annotation):
 
     return [xmin, ymin, xmax, ymax]
   
-  def get_frame_id(self, row, source):
-    id = f"{source}_frame{int(row['3: Unique Frame Identifier'])*30}.jpg"
-    return id
+  def get_frame_id(self, row):
+    return int(row['3: Unique Frame Identifier'])
   
   def get_track_id(self, row):
     return row["# 1: Detection or Track-id"]
