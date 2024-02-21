@@ -1,9 +1,9 @@
 from ultralytics import YOLO
 import cv2
 import os
+import time
 import sys
 from pathlib import Path
-import time
 
 # Since we are importing a file in a super directory, we need to add the root directory to sys.path
 root_dir = Path(__file__).resolve().parent.parent

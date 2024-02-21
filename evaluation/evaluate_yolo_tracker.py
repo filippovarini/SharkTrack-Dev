@@ -38,19 +38,21 @@ def track_frame_sequence(sequence_path, model_path, conf_threshold, iou_associat
 
     model = YOLO(model_path)
 
-    bbox_xyxys = []
-    confidences = []
-    track_ids = []
+    pred_bbox_xyxys = []
+    pred_confidences = []
+    pred_track_ids = []
 
     frame_count = 0 
 
     for frame in frames:
       frame_count += 1
       frame_number = extract_frame_number(frame)
-      print(f"Processing frame {frame_number}")
+      print(f"\rProcessing frame {frame_number}", end='')
+
+      frame_path = os.path.join(sequence_path, frame)
 
       results = model.track(
-        frame,
+        frame_path,
         persist=True,
         conf=conf_threshold,
         iou=iou_association_threshold,
@@ -68,16 +70,16 @@ def track_frame_sequence(sequence_path, model_path, conf_threshold, iou_associat
       min_idx = min(len(boxes), len(track_ids), len(confidences))
 
       # Store the track history
-      bbox_xyxys.append(boxes[:min_idx])
-      confidences.append(confidences[:min_idx])
-      track_ids.append(track_ids[:min_idx])
+      pred_bbox_xyxys.append(boxes[:min_idx])
+      pred_confidences.append(confidences[:min_idx])
+      pred_track_ids.append(track_ids[:min_idx])
 
     print('\n')
     print(f'processed {frame_count} frames')
     print(f'sequence processing time: {time.time() - sequence_start_time}')
-    assert len(bbox_xyxys) == len(confidences) == len(track_ids), f'Lengths do not match {len(bbox_xyxys)=}, {len(confidences)=}, {len(track_ids)=}'
+    assert len(pred_bbox_xyxys) == len(pred_confidences) == len(pred_track_ids), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}, {len(pred_track_ids)=}'
 
-    return [bbox_xyxys, confidences, track_ids]
+    return [pred_bbox_xyxys, pred_confidences, pred_track_ids]
 
 
 def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
@@ -90,10 +92,10 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
 
   # Prepare performance plot
   num_plots = len(VAL_SEQUENCES)
-  performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
+  # performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
 
   track_start_time = time.time()
-  for sequence in VAL_SEQUENCES:
+  for sequence in VAL_SEQUENCES[:1]:
     sequence_path = os.path.join(sequences_path, sequence)
     assert os.path.exists(sequence_path), f'sequence file does not exist {sequence_path}'
 
@@ -113,20 +115,20 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     motps.append(motp)
     idf1s.append(idf1)
 
-    fig = plot_performance_graph(aligned_annotations, frame_avg_motp)
+    fig = plot_performance_graph(aligned_annotations, frame_avg_motp, sequence)
     figs.append(fig)
   
   track_end_time = time.time()
   track_time = round((track_end_time - track_start_time) / 60, 2)
 
-  return motas, motps, idf1s, track_time, get_torch_device(), figs
+  return motas, motps, idf1s, track_time, get_torch_device(), figs, aligned_annotations
 
 
 def evaluate(model_path, conf, iou, imgsz, tracker):
   """
   return macro-avg metrics
   """
-  motas, motps, idf1s, track_time, device, _ = evaluate_sequence(model_path, conf, iou, imgsz, tracker)
+  motas, motps, idf1s, track_time, device, _, _ = evaluate_sequence(model_path, conf, iou, imgsz, tracker)
 
   macro_mota = round(np.mean(motas), 2)
   macro_motp = round(np.mean(motps), 2)

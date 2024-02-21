@@ -5,7 +5,7 @@ import os
 
 def extract_frame_number(frame_name):
   assert frame_name.endswith('.jpg')
-  return int(frame_name.replace('.jpg', '').split('_')[-1])
+  return int(frame_name.replace('.jpg', '').split('_')[-1].replace('frame', ''))
 
 
 def target2pred_align(annotations, track_predictions, sequence_path):
@@ -228,11 +228,11 @@ def plot_performance_graph(aligned_annotations, motp_per_frame, video_name):
 
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.set_title(f'Performance for {video_name}')
-    ax.plot(gt_track_ids_count, label='Ground Truth')
-    ax.plot(pred_track_ids_count, label='Predictions')
-    ax.plot(motp_frames, motp_values, label='Frame-Avg MOTP', linestyle='-')
+    ax.plot(gt_track_ids_count, label='Ground Truth', linestyle='-', marker='o', alpha=0.5)
+    ax.plot(pred_track_ids_count, label='Predictions', linestyle='-', marker='o', alpha=0.5)
+    # ax.plot(motp_frames, motp_values, label='Frame-Avg MOTP', linestyle='-', marker='o', alpha=0.5)
 
-    ax.set_xlabel('Time (seconds)')
+    ax.set_xlabel('Frame Number')
     ax.set_ylabel('Number of Tracks / MOTP')
     ax.legend()
 
