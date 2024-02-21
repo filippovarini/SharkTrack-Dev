@@ -15,7 +15,10 @@ def track_folder_videos(params):
   start_time = time.time()
   
   videos = os.listdir(params['video_folder'])
-  for video in videos[:1]:
+  for video in videos:
+    if video.startswith('RGX'):
+      # only do left camera videos
+      continue
     print(f"Processing video {video}")
 
     video_start_time = time.time()
@@ -94,19 +97,19 @@ def track_folder_videos(params):
 
 
 if __name__ == '__main__':
-  base_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_APR23_no_streams'
+  base_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_NOV23_no_streams'
 
   start_time = time.time()
   for folder in os.listdir(base_path):
       print(f'Processing folder {folder}...')
       video_folder = os.path.join(base_path, folder)
       params = {
-        'model_path': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/old/shark_locator_tests/runs/detect/yolov8m_mvd2/best.pt',
-        'conf_threshold': 0.2,
+        'model_path': '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/models/p2v6_new_v4/weights/best.pt',
+        'conf_threshold': 0.3,
         'iou_association_threshold': 0.5,
         'imgsz': 640,
         'tracker': 'botsort.yaml',
-        'annotation_folder': f'/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/annotations/mwitt/AXA_APR23/{folder}',
+        'annotation_folder': f'/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/annotations/mwitt/AXA_NOV23_v3/{folder}',
         'video_folder': video_folder,
         'desired_fps': 5,
       }

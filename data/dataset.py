@@ -106,6 +106,27 @@ class CustomDataset(Dataset):
             fig_path = os.path.join(model_folder, 'dataset_sample.png')
             print(f'Saving dataset sample to {fig_path}')
             fig.savefig(fig_path)
+
+    def plot_instance_number_distribution(self):
+        """
+        Plots the distribution of the number of instances in each image.
+        """
+        num_instances = []
+        for i in range(len(self)):
+            bboxes = self[i]['bboxes']
+            num_instances.append(len(bboxes))
+        pd.Series(num_instances).hist()
+
+    def plot_bbox_size_distribution(self):
+        """
+        Plots the distribution of the size of the bounding boxes.
+        """
+        bbox_sizes = []
+        for i in range(len(self)):
+            bboxes = self[i]['bboxes']
+            for bbox in bboxes:
+                bbox_sizes.append((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]))
+        pd.Series(bbox_sizes).hist()
     
     def _file_is_image(self, file):
         return file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg')

@@ -1,9 +1,11 @@
 from utils import align_annotations_with_predictions_dict_corrected, evaluate_tracking, get_torch_device
+import matplotlib.pyplot as plt
 from ultralytics import YOLO
 import pandas as pd
 import numpy as np
-import os
+import utils
 import time 
+import os
 
 BRUVS_VIDEO_LENGTH = 20
 VAL_VIDEOS = [
@@ -87,8 +89,8 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
   idf1s = []
 
   # Prepare performance plot
-  # num_plots = len(video_names)
-  # performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
+  num_plots = len(video_names)
+  performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
 
   track_start_time = time.time()
   
@@ -116,7 +118,7 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
     motps.append(motp)
     idf1s.append(idf1)
 
-    # fig = utils.plot_performance_graph(aligned_annotations, frame_avg_motp)
+    fig = utils.plot_performance_graph(aligned_annotations, frame_avg_motp)
     # fig.savefig(os.path.join(model_folder, f"{video}.png"))
 
   macro_mota = round(np.mean(motas), 2)
@@ -126,4 +128,4 @@ def evaluate(model_path, conf, iou, imgsz, tracker, project_path):
   track_end_time = time.time()
   track_time = round((track_end_time - track_start_time) / 60, 2)
 
-  return macro_mota, macro_motp, macro_idf1, track_time, get_torch_device()#, performance_plot
+  return macro_mota, macro_motp, macro_idf1, track_time, get_torch_device(), performance_plot
