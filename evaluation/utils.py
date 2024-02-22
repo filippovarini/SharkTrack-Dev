@@ -8,7 +8,7 @@ def extract_frame_number(frame_name):
   return int(frame_name.replace('.jpg', '').split('_')[-1].replace('frame', ''))
 
 
-def target2pred_align(annotations, track_predictions, sequence_path):
+def target2pred_align(annotations, track_predictions, sequence_path, tracker):
     """
     Predictions are definitive, target to align 
     """
@@ -39,7 +39,9 @@ def target2pred_align(annotations, track_predictions, sequence_path):
     assert len(results["gt_track_ids"]) == tot_annotation_frames
     assert len(results["pred_bbox_xyxys"]) == tot_annotation_frames
     assert len(results["pred_confidences"]) == tot_annotation_frames
-    assert len(results["pred_track_ids"]) == tot_annotation_frames
+    if tracker is not None:
+        # when we don't have tracker we run detection only, so we don't have track_ids
+        assert len(results["pred_track_ids"]) == tot_annotation_frames
 
     return results    
 
@@ -216,11 +218,11 @@ def plot_performance_graph(aligned_annotations, motp_per_frame, video_name):
     Plots number of ground truth tracks vs number of predicted tracks for each frame,
     along with the MOTP for frames where it's available.
     """
-    gt_track_ids = aligned_annotations['gt_track_ids']
-    pred_track_ids = aligned_annotations['pred_track_ids']
+    gt_bbox_xyxys = aligned_annotations['gt_bbox_xyxys']
+    pred_bbox_xyxys = aligned_annotations['pred_bbox_xyxys']
 
-    gt_track_ids_count = [len(x) for x in gt_track_ids]
-    pred_track_ids_count = [len(x) for x in pred_track_ids]
+    gt_bbox_xyxys_count = [len(x) for x in gt_bbox_xyxys]
+    pred_bbox_xyxys_count = [len(x) for x in pred_bbox_xyxys]
 
     # Filter out None values from MOTP list and get corresponding frame numbers
     motp_values = [motp for motp in motp_per_frame if motp is not None]
@@ -228,8 +230,8 @@ def plot_performance_graph(aligned_annotations, motp_per_frame, video_name):
 
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.set_title(f'Performance for {video_name}')
-    ax.plot(gt_track_ids_count, label='Ground Truth', linestyle='-', marker='o', alpha=0.5)
-    ax.plot(pred_track_ids_count, label='Predictions', linestyle='-', marker='o', alpha=0.5)
+    ax.plot(gt_bbox_xyxys_count, label='Ground Truth', linestyle='-', marker='o', alpha=0.5)
+    ax.plot(pred_bbox_xyxys_count, label='Predictions', linestyle='-', marker='o', alpha=0.5)
     # ax.plot(motp_frames, motp_values, label='Frame-Avg MOTP', linestyle='-', marker='o', alpha=0.5)
 
     ax.set_xlabel('Frame Number')

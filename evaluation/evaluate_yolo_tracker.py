@@ -82,6 +82,50 @@ def track_frame_sequence(sequence_path, model_path, conf_threshold, iou_associat
     return [pred_bbox_xyxys, pred_confidences, pred_track_ids]
 
 
+def detect_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz):
+    print('running detection only...')
+    frames = [f for f in os.listdir(sequence_path) if f.endswith('.jpg')]
+    frames.sort(key=extract_frame_number)
+
+    sequence_start_time = time.time()
+
+    model = YOLO(model_path)
+
+    pred_bbox_xyxys = []
+    pred_confidences = []
+
+    frame_count = 0 
+
+    for frame in frames:
+      frame_count += 1
+      frame_number = extract_frame_number(frame)
+      print(f"\rProcessing frame {frame_number}", end='')
+
+      frame_path = os.path.join(sequence_path, frame)
+
+      results = model.predict(
+        frame_path,
+        conf=conf_threshold,
+        iou=iou_association_threshold,
+        imgsz=imgsz,
+        verbose=False
+      )
+
+      # Get the boxes and track IDs
+      boxes = results[0].boxes.xyxy.cpu().tolist()
+      confidences = results[0].boxes.conf.cpu().tolist()
+
+      pred_bbox_xyxys.append(boxes)
+      pred_confidences.append(confidences)
+
+    print('\n')
+    print(f'processed {frame_count} frames')
+    print(f'sequence processing time: {time.time() - sequence_start_time}')
+    assert len(pred_bbox_xyxys) == len(pred_confidences), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}'
+
+    return [pred_bbox_xyxys, pred_confidences, []]
+
+
 def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
 
   # macro average
@@ -89,13 +133,14 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
   motps = []
   idf1s = []
   figs = []
+  aligned_annotations_list = []
 
   # Prepare performance plot
   num_plots = len(VAL_SEQUENCES)
   # performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
 
   track_start_time = time.time()
-  for sequence in VAL_SEQUENCES[:1]:
+  for sequence in VAL_SEQUENCES:
     sequence_path = os.path.join(sequences_path, sequence)
     assert os.path.exists(sequence_path), f'sequence file does not exist {sequence_path}'
 
@@ -104,13 +149,15 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     annotations = pd.read_csv(annotations_path)
 
     print(f"Evaluating {sequence}")
-    results = track_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker)
+    results = track_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker) if tracker else detect_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz)
 
-    aligned_annotations = target2pred_align(annotations, results, sequence_path)
-    aligned_annotations_df = pd.DataFrame(aligned_annotations)
+    aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
+    aligned_annotations_list.append(aligned_annotations)
     # save annotations in future
 
-    mota, motp, idf1, frame_avg_motp = evaluate_tracking(aligned_annotations, S_TRESH=0.5)
+    mota, motp, idf1, frame_avg_motp = 0, 0, 0, [0]
+    if tracker:
+      mota, motp, idf1, frame_avg_motp = evaluate_tracking(aligned_annotations, S_TRESH=0.5)
     motas.append(mota)
     motps.append(motp)
     idf1s.append(idf1)
@@ -121,7 +168,7 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
   track_end_time = time.time()
   track_time = round((track_end_time - track_start_time) / 60, 2)
 
-  return motas, motps, idf1s, track_time, get_torch_device(), figs, aligned_annotations
+  return motas, motps, idf1s, track_time, get_torch_device(), figs, aligned_annotations_list
 
 
 def evaluate(model_path, conf, iou, imgsz, tracker):
