@@ -30,7 +30,9 @@ VAL_SEQUENCES = [
 ]
 
 
-def track_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
+def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker=None):
+    mode = 'track' if tracker else 'detect'
+    print(f'Running {mode} mode...')
     frames = [f for f in os.listdir(sequence_path) if f.endswith('.jpg')]
     frames.sort(key=extract_frame_number)
 
@@ -42,89 +44,57 @@ def track_frame_sequence(sequence_path, model_path, conf_threshold, iou_associat
     pred_confidences = []
     pred_track_ids = []
 
-    frame_count = 0 
+    frame_count = 0
 
     for frame in frames:
-      frame_count += 1
-      frame_number = extract_frame_number(frame)
-      print(f"\rProcessing frame {frame_number}", end='')
+        frame_count += 1
+        frame_number = extract_frame_number(frame)
+        print(f"\rProcessing frame {frame_number}", end='')
 
-      frame_path = os.path.join(sequence_path, frame)
+        frame_path = os.path.join(sequence_path, frame)
 
-      results = model.track(
-        frame_path,
-        persist=True,
-        conf=conf_threshold,
-        iou=iou_association_threshold,
-        imgsz=imgsz,
-        tracker=tracker,
-        verbose=False
-      )
+        if mode == 'track':
+            results = model.track(
+                frame_path,
+                persist=True,
+                conf=conf_threshold,
+                iou=iou_association_threshold,
+                imgsz=imgsz,
+                tracker=tracker,
+                verbose=False
+            )
+            tracks = results[0].boxes.id
+            track_ids = tracks.int().cpu().tolist() if tracks is not None else []
+            pred_track_ids.append(track_ids[:min_idx])
+        else:  # mode == 'detect'
+            results = model.predict(
+                frame_path,
+                conf=conf_threshold,
+                iou=iou_association_threshold,
+                imgsz=imgsz,
+                verbose=False
+            )
 
-      # Get the boxes and track IDs
-      boxes = results[0].boxes.xyxy.cpu().tolist()
-      tracks = results[0].boxes.id
-      track_ids = tracks.int().cpu().tolist() if tracks is not None else []
-      confidences = results[0].boxes.conf.cpu().tolist()
+        boxes = results[0].boxes.xyxy.cpu().tolist()
+        confidences = results[0].boxes.conf.cpu().tolist()
 
-      min_idx = min(len(boxes), len(track_ids), len(confidences))
+        min_idx = min(len(boxes), len(confidences), len(track_ids) if mode == 'track' else len(boxes))
 
-      # Store the track history
-      pred_bbox_xyxys.append(boxes[:min_idx])
-      pred_confidences.append(confidences[:min_idx])
-      pred_track_ids.append(track_ids[:min_idx])
-
-    print('\n')
-    print(f'processed {frame_count} frames')
-    print(f'sequence processing time: {time.time() - sequence_start_time}')
-    assert len(pred_bbox_xyxys) == len(pred_confidences) == len(pred_track_ids), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}, {len(pred_track_ids)=}'
-
-    return [pred_bbox_xyxys, pred_confidences, pred_track_ids]
-
-
-def detect_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz):
-    print('running detection only...')
-    frames = [f for f in os.listdir(sequence_path) if f.endswith('.jpg')]
-    frames.sort(key=extract_frame_number)
-
-    sequence_start_time = time.time()
-
-    model = YOLO(model_path)
-
-    pred_bbox_xyxys = []
-    pred_confidences = []
-
-    frame_count = 0 
-
-    for frame in frames:
-      frame_count += 1
-      frame_number = extract_frame_number(frame)
-      print(f"\rProcessing frame {frame_number}", end='')
-
-      frame_path = os.path.join(sequence_path, frame)
-
-      results = model.predict(
-        frame_path,
-        conf=conf_threshold,
-        iou=iou_association_threshold,
-        imgsz=imgsz,
-        verbose=False
-      )
-
-      # Get the boxes and track IDs
-      boxes = results[0].boxes.xyxy.cpu().tolist()
-      confidences = results[0].boxes.conf.cpu().tolist()
-
-      pred_bbox_xyxys.append(boxes)
-      pred_confidences.append(confidences)
+        pred_bbox_xyxys.append(boxes[:min_idx])
+        pred_confidences.append(confidences[:min_idx])
+        if mode == 'track':
+            pred_track_ids.append(track_ids[:min_idx])
 
     print('\n')
-    print(f'processed {frame_count} frames')
-    print(f'sequence processing time: {time.time() - sequence_start_time}')
-    assert len(pred_bbox_xyxys) == len(pred_confidences), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}'
+    print(f'Processed {frame_count} frames in {mode} mode.')
+    print(f'Sequence processing time: {time.time() - sequence_start_time}')
 
-    return [pred_bbox_xyxys, pred_confidences, []]
+    if mode == 'track':
+        assert len(pred_bbox_xyxys) == len(pred_confidences) == len(pred_track_ids), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}, {len(pred_track_ids)=}'
+    else:
+        assert len(pred_bbox_xyxys) == len(pred_confidences), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}'
 
+    return [pred_bbox_xyxys, pred_confidences, pred_track_ids if mode == 'track' else []]
 
 def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
 
@@ -149,7 +119,7 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     annotations = pd.read_csv(annotations_path)
 
     print(f"Evaluating {sequence}")
-    results = track_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker) if tracker else detect_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz)
+    results = process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker)
 
     aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
     aligned_annotations_list.append(aligned_annotations)
