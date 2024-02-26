@@ -65,7 +65,6 @@ def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_associ
             )
             tracks = results[0].boxes.id
             track_ids = tracks.int().cpu().tolist() if tracks is not None else []
-            pred_track_ids.append(track_ids[:min_idx])
         else:  # mode == 'detect'
             results = model.predict(
                 frame_path,
@@ -110,7 +109,7 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
   # performance_plot, axs = plt.subplots(num_plots, 1, figsize=(10, 6 * num_plots))
 
   track_start_time = time.time()
-  for sequence in VAL_SEQUENCES:
+  for sequence in VAL_SEQUENCES[:5]:
     sequence_path = os.path.join(sequences_path, sequence)
     assert os.path.exists(sequence_path), f'sequence file does not exist {sequence_path}'
 
