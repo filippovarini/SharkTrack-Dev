@@ -3,3 +3,4 @@ models/*
 *.pt
 *.pth
 */__pycache__/
+*/TrackEval
