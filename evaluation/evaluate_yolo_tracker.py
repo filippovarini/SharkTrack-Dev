@@ -1,4 +1,4 @@
-from utils import target2pred_align, evaluate_tracking, get_torch_device, plot_performance_graph, extract_frame_number, save_trackeval_annotations
+from utils import target2pred_align, get_torch_device, plot_performance_graph, extract_frame_number, save_trackeval_annotations
 from TrackEval.scripts.run_mot_challenge_functional import run_mot_challenge
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
@@ -14,10 +14,10 @@ sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
-  # 'val1_easy1',
-  # 'val1_easy2',
-  # 'val1_medium1',
-  # 'val1_medium2',
+  'val1_easy1',
+  'val1_easy2',
+  'val1_medium1',
+  'val1_medium2',
   # 'sp_natgeo2',
   # 'gfp_hawaii1',
   # 'shlife_scalloped4',
@@ -54,7 +54,6 @@ def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_associ
     frames = [f for f in os.listdir(sequence_path) if f.endswith('.jpg')]
     frames.sort(key=extract_frame_number)
 
-    sequence_start_time = time.time()
 
     model = YOLO(model_path)
 
@@ -64,6 +63,7 @@ def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_associ
 
     frame_count = 0
 
+    sequence_start_time = time.time()
     for frame in frames:
         frame_count += 1
         frame_number = extract_frame_number(frame)
@@ -101,17 +101,19 @@ def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_associ
         pred_confidences.append(confidences[:min_idx])
         if mode == 'track':
             pred_track_ids.append(track_ids[:min_idx])
+    
+    track_time = time.time() - sequence_start_time
 
     print('\n')
     print(f'Processed {frame_count} frames in {mode} mode.')
-    print(f'Sequence processing time: {time.time() - sequence_start_time}')
+    print(f'Sequence processing time: {track_time:.2f}s')
 
     if mode == 'track':
         assert len(pred_bbox_xyxys) == len(pred_confidences) == len(pred_track_ids), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}, {len(pred_track_ids)=}'
     else:
         assert len(pred_bbox_xyxys) == len(pred_confidences), f'Lengths do not match {len(pred_bbox_xyxys)=}, {len(pred_confidences)=}'
 
-    return [pred_bbox_xyxys, pred_confidences, pred_track_ids if mode == 'track' else []]
+    return [pred_bbox_xyxys, pred_confidences, pred_track_ids if mode == 'track' else []], track_time
 
 def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
   all_aligned_annotations = {}
@@ -125,7 +127,8 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     annotations = pd.read_csv(annotations_path)
 
     print(f"Evaluating {sequence}")
-    results = process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker) # [bbox_xyxys, confidences, track_ids]
+    results, time = process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker) # [bbox_xyxys, confidences, track_ids]
+    track_time += time
 
     # Annotations for visualisation
     aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
@@ -139,7 +142,6 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     # save prediction annotations to calculate metrics
     save_trackeval_annotations(all_aligned_annotations)
     motas, motps, idf1s = compute_clear_metrics()
-  track_time = 0
 
   return motas, motps, idf1s, track_time, get_torch_device(), all_aligned_annotations
 
