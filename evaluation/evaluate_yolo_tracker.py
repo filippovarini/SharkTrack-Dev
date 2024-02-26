@@ -1,4 +1,5 @@
-from utils import target2pred_align, evaluate_tracking, get_torch_device, plot_performance_graph, extract_frame_number
+from utils import target2pred_align, evaluate_tracking, get_torch_device, plot_performance_graph, extract_frame_number, save_trackeval_annotations
+from TrackEval.scripts.run_mot_challenge_functional import run_mot_challenge
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 import pandas as pd
@@ -13,21 +14,40 @@ sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
-  'val1_easy1',
-  'val1_easy2',
-  'val1_medium1',
-  'val1_medium2',
-  'sp_natgeo2',
-  'gfp_hawaii1',
-  'shlife_scalloped4',
-  'gfp_fiji1',
-  'shlife_smooth2',
-  'gfp_niue1',
-  'gfp_solomon1',
-  'gfp_montserrat1',
-  'gfp_rand3',
-  'shlife_bull4'
+  # 'val1_easy1',
+  # 'val1_easy2',
+  # 'val1_medium1',
+  # 'val1_medium2',
+  # 'sp_natgeo2',
+  # 'gfp_hawaii1',
+  # 'shlife_scalloped4',
+  # 'gfp_fiji1',
+  # 'shlife_smooth2',
+  # 'gfp_niue1',
+  # 'gfp_solomon1',
+  # 'gfp_montserrat1',
+  # 'gfp_rand3',
+  # 'shlife_bull4'
 ]
+
+def compute_clear_metrics():
+  sequence_metrics = run_mot_challenge(BENCHMARK='val1', METRICS=['CLEAR', 'Identity'])
+  motas, motps, idf1s = 0, 0, 0
+  for sequence in sequence_metrics:
+    mota = round(sequence_metrics[sequence]['MOTA'], 2)
+    motp = round(sequence_metrics[sequence]['MOTP'], 2)
+    idf1 = round(sequence_metrics[sequence]['IDF1'], 2)
+    print(f'{sequence} MOTA: {mota}, MOTP: {motp}, IDF1: {idf1}')
+    motas += mota
+    motps += motp
+    idf1s += idf1
+  
+  motas = round(motas / len(sequence_metrics), 2)
+  motps = round(motps / len(sequence_metrics), 2)
+  idf1s = round(idf1s / len(sequence_metrics), 2)
+
+  return motas, motps, idf1s
+
 
 
 def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker=None):
@@ -139,6 +159,47 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
 
   return motas, motps, idf1s, track_time, get_torch_device(), figs, aligned_annotations_list
 
+
+def evaluate_tracker(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
+  assert tracker is not None
+
+  figs = []
+  all_aligned_annotations = {}
+  track_time = 0
+  for sequence in VAL_SEQUENCES[:5]:
+    sequence_path = os.path.join(sequences_path, sequence)
+    assert os.path.exists(sequence_path), f'sequence file does not exist {sequence_path}'
+
+    annotations_path = os.path.join(sequence_path, 'annotations.csv')
+    assert os.path.exists(annotations_path), f'annotations file does not exist {annotations_path}'
+    annotations = pd.read_csv(annotations_path)
+
+    print(f"Evaluating {sequence}")
+    results = process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker) # [bbox_xyxys, confidences, track_ids]
+
+    # Annotations for visualisation
+    aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
+    all_aligned_annotations[sequence] = (aligned_annotations)
+
+
+    # mota, motp, idf1, frame_avg_motp = 0, 0, 0, [0]
+    # if tracker:
+    #   mota, motp, idf1, frame_avg_motp = evaluate_tracking(aligned_annotations, S_TRESH=0.5)
+    # motas.append(mota)
+    # motps.append(motp)
+    # idf1s.append(idf1)
+
+    # save prediction annotations to calculate metrics
+  save_trackeval_annotations(all_aligned_annotations)
+
+    # fig = plot_performance_graph(aligned_annotations, frame_avg_motp, sequence)
+    # figs.append(fig)
+  
+  track_time = 0
+
+  motas, motps, idf1s = compute_clear_metrics()
+
+  return motas, motps, idf1s, track_time, get_torch_device(), figs, all_aligned_annotations
 
 def evaluate(model_path, conf, iou, imgsz, tracker):
   """

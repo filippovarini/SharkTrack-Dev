@@ -1,11 +1,83 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import shutil
 import torch
 import os
 
 def extract_frame_number(frame_name):
   assert frame_name.endswith('.jpg')
   return int(frame_name.replace('.jpg', '').split('_')[-1].replace('frame', ''))
+
+
+def save_trackeval_annotations(annotations):
+    """
+    Stores the prediction annotations as txt file in TrackEval format: 
+    <frame>, <track_id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>,
+
+    annotations is a dict of the following structure:
+    {
+    <sequence_name>: {
+        gt_bbox_xyxys: List of ground truth bounding boxes for each frame
+        gt_track_ids: List of ground truth track IDs for each frame
+        pred_bbox_xyxys: List of predicted bounding boxes for each frame
+        pred_confidences: List of predicted confidences for each frame
+        pred_track_ids: List of predicted track IDs for each frame
+        frame_id: List of frame numbers
+    }
+    """
+    benchmark = 'val1'
+    tracker_annotations_path = f'/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/evaluation/TrackEval/data/trackers/mot_challenge/{benchmark}-train/MPNTrack/data'
+    gt_annotations_path = f'/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/evaluation/TrackEval/data/gt/mot_challenge/'
+    dummy_ini = '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/evaluation/TrackEval/data/gt/seqinfo.ini'
+
+    # Create seqmaps folder
+    seqmaps_path = os.path.join(gt_annotations_path, 'seqmaps')
+    with open(os.path.join(seqmaps_path, f'{benchmark}-train.txt'), 'w') as file:
+        file.write("name\n")
+        for sequence_name in annotations.keys():
+            file.write(f"{sequence_name}\n")
+    shutil.copy(os.path.join(seqmaps_path, f'{benchmark}-train.txt'), os.path.join(seqmaps_path, f'{benchmark}-all.txt'))
+
+    gt_benchmark_path = os.path.join(gt_annotations_path, f'{benchmark}-train')
+    assert os.path.exists(gt_benchmark_path)
+    # remove all subfolders
+    shutil.rmtree(gt_benchmark_path)
+    os.makedirs(gt_benchmark_path)
+
+    # Empty the tracker directory
+    for file in os.listdir(tracker_annotations_path):
+        os.remove(os.path.join(tracker_annotations_path, file))
+
+    for sequence_name, sequence_annotations in annotations.items():
+        # Ground Truch
+        os.makedirs(os.path.join(gt_benchmark_path, sequence_name))
+        gt_sequence_path = os.path.join(gt_benchmark_path, sequence_name, 'gt')
+        os.makedirs(gt_sequence_path)
+        shutil.copy(dummy_ini, os.path.join(gt_benchmark_path, sequence_name, 'seqinfo.ini'))
+
+        with open(os.path.join(gt_sequence_path, f'gt.txt'), 'w') as file:
+            for i, frame_id in enumerate(sequence_annotations['frame_id']):
+                gt_bbox_xyxys = sequence_annotations['gt_bbox_xyxys'][i]
+                gt_track_ids = sequence_annotations['gt_track_ids'][i]
+
+                for j, gt_bbox in enumerate(gt_bbox_xyxys):
+                    # Frame number is 1-indexed in TrackEval
+                    file.write(f"{frame_id+1},{gt_track_ids[j]},{gt_bbox[0]},{gt_bbox[1]},{gt_bbox[2] - gt_bbox[0]},{gt_bbox[3] - gt_bbox[1]},1,1,1\n")
+
+
+        # Tracker
+        tracker_sequence_path = os.path.join(tracker_annotations_path, f'{sequence_name}.txt')
+        # Create a txt file for each sequence where each line is a detection in the format:
+        # <frame>, <track_id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>,
+        with open(tracker_sequence_path, 'w') as file:
+            for i, frame_id in enumerate(sequence_annotations['frame_id']):
+                pred_bbox_xyxys = sequence_annotations['pred_bbox_xyxys'][i]
+                pred_confidences = sequence_annotations['pred_confidences'][i]
+                pred_track_ids = sequence_annotations['pred_track_ids'][i]
+
+                for j, pred_bbox in enumerate(pred_bbox_xyxys):
+                    # Frame number is 1-indexed in TrackEval
+                    file.write(f"{frame_id+1},{pred_track_ids[j]},{pred_bbox[0]},{pred_bbox[1]},{pred_bbox[2] - pred_bbox[0]},{pred_bbox[3] - pred_bbox[1]},{pred_confidences[j]},-1,-1,-1\n")
 
 
 def target2pred_align(annotations, track_predictions, sequence_path, tracker):
