@@ -285,7 +285,7 @@ def evaluate_tracking(results, S_TRESH):
 
     return mota, motp, idf1, frame_avg_motp
 
-def plot_performance_graph(aligned_annotations, motp_per_frame, video_name):
+def plot_performance_graph(aligned_annotations, video_name):
     """
     Plots number of ground truth tracks vs number of predicted tracks for each frame,
     along with the MOTP for frames where it's available.
@@ -296,15 +296,10 @@ def plot_performance_graph(aligned_annotations, motp_per_frame, video_name):
     gt_bbox_xyxys_count = [len(x) for x in gt_bbox_xyxys]
     pred_bbox_xyxys_count = [len(x) for x in pred_bbox_xyxys]
 
-    # Filter out None values from MOTP list and get corresponding frame numbers
-    motp_values = [motp for motp in motp_per_frame if motp is not None]
-    motp_frames = [i for i, motp in enumerate(motp_per_frame) if motp is not None]
-
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.set_title(f'Performance for {video_name}')
     ax.plot(gt_bbox_xyxys_count, label='Ground Truth', linestyle='-', marker='o', alpha=0.5)
     ax.plot(pred_bbox_xyxys_count, label='Predictions', linestyle='-', marker='o', alpha=0.5)
-    # ax.plot(motp_frames, motp_values, label='Frame-Avg MOTP', linestyle='-', marker='o', alpha=0.5)
 
     ax.set_xlabel('Frame Number')
     ax.set_ylabel('Number of Tracks / MOTP')

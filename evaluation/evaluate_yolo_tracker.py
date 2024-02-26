@@ -48,8 +48,6 @@ def compute_clear_metrics():
 
   return motas, motps, idf1s
 
-
-
 def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker=None):
     mode = 'track' if tracker else 'detect'
     print(f'Running {mode} mode...')
@@ -163,7 +161,6 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
 def evaluate_tracker(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
   assert tracker is not None
 
-  figs = []
   all_aligned_annotations = {}
   track_time = 0
   for sequence in VAL_SEQUENCES[:5]:
@@ -181,25 +178,16 @@ def evaluate_tracker(model_path, conf_threshold, iou_association_threshold, imgs
     aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
     all_aligned_annotations[sequence] = (aligned_annotations)
 
+    plot_performance_graph(aligned_annotations, sequence)
 
-    # mota, motp, idf1, frame_avg_motp = 0, 0, 0, [0]
-    # if tracker:
-    #   mota, motp, idf1, frame_avg_motp = evaluate_tracking(aligned_annotations, S_TRESH=0.5)
-    # motas.append(mota)
-    # motps.append(motp)
-    # idf1s.append(idf1)
-
-    # save prediction annotations to calculate metrics
+  # save prediction annotations to calculate metrics
   save_trackeval_annotations(all_aligned_annotations)
-
-    # fig = plot_performance_graph(aligned_annotations, frame_avg_motp, sequence)
-    # figs.append(fig)
   
   track_time = 0
 
   motas, motps, idf1s = compute_clear_metrics()
 
-  return motas, motps, idf1s, track_time, get_torch_device(), figs, all_aligned_annotations
+  return motas, motps, idf1s, track_time, get_torch_device(), all_aligned_annotations
 
 def evaluate(model_path, conf, iou, imgsz, tracker):
   """
