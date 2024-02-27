@@ -11,6 +11,7 @@ import os
 
 BRUVS_VIDEO_LENGTH = 20
 sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
+sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/val1/frames_10fps'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
