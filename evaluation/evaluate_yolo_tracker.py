@@ -11,7 +11,6 @@ import os
 
 BRUVS_VIDEO_LENGTH = 20
 sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
-sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/val1/frames_10fps'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
@@ -19,35 +18,37 @@ VAL_SEQUENCES = [
   'val1_easy2',
   'val1_medium1',
   'val1_medium2',
-  # 'sp_natgeo2',
+  'sp_natgeo2',
   # 'gfp_hawaii1',
-  # 'shlife_scalloped4',
+  'shlife_scalloped4',
   # 'gfp_fiji1',
-  # 'shlife_smooth2',
+  'shlife_smooth2',
   # 'gfp_niue1',
   # 'gfp_solomon1',
   # 'gfp_montserrat1',
   # 'gfp_rand3',
-  # 'shlife_bull4'
+  'shlife_bull4'
 ]
 
 def compute_clear_metrics():
-  sequence_metrics = run_mot_challenge(BENCHMARK='val1', METRICS=['CLEAR', 'Identity'])
-  motas, motps, idf1s = 0, 0, 0
+  sequence_metrics = run_mot_challenge(BENCHMARK='val1', METRICS=['CLEAR', 'Identity', 'HOTA'])
+  motas, motps, idf1s, hotas = 0, 0, 0, 0
   for sequence in sequence_metrics:
     mota = round(sequence_metrics[sequence]['MOTA'], 2)
     motp = round(sequence_metrics[sequence]['MOTP'], 2)
     idf1 = round(sequence_metrics[sequence]['IDF1'], 2)
-    print(f'{sequence} MOTA: {mota}, MOTP: {motp}, IDF1: {idf1}')
+    hota = round(sequence_metrics[sequence]['HOTA(0)'], 2)
     motas += mota
     motps += motp
     idf1s += idf1
+    hotas += hota
   
   motas = round(motas / len(sequence_metrics), 2)
   motps = round(motps / len(sequence_metrics), 2)
   idf1s = round(idf1s / len(sequence_metrics), 2)
+  hotas = round(hotas / len(sequence_metrics), 2)
 
-  return motas, motps, idf1s
+  return motas, motps, idf1s, hotas
 
 def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_association_threshold, imgsz, tracker=None):
     mode = 'track' if tracker else 'detect'
@@ -119,7 +120,7 @@ def process_frame_sequence(sequence_path, model_path, conf_threshold, iou_associ
 def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, imgsz, tracker):
   all_aligned_annotations = {}
   track_time = 0
-  for sequence in VAL_SEQUENCES[:5]:
+  for sequence in VAL_SEQUENCES:
     sequence_path = os.path.join(sequences_path, sequence)
     assert os.path.exists(sequence_path), f'sequence file does not exist {sequence_path}'
 
@@ -135,22 +136,22 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     aligned_annotations = target2pred_align(annotations, results, sequence_path, tracker=tracker)
     all_aligned_annotations[sequence] = (aligned_annotations)
 
-    plot_performance_graph(aligned_annotations, sequence)
+    # plot_performance_graph(aligned_annotations, sequence)
 
   motas, motps, idf1s = 0, 0, 0 
   
   if tracker:
     # save prediction annotations to calculate metrics
     save_trackeval_annotations(all_aligned_annotations)
-    motas, motps, idf1s = compute_clear_metrics()
+    motas, motps, idf1s, hotas = compute_clear_metrics()
 
-  return motas, motps, idf1s, track_time, get_torch_device(), all_aligned_annotations
+  return motas, motps, idf1s, hotas, track_time, get_torch_device(), all_aligned_annotations
 
 def evaluate(model_path, conf, iou, imgsz, tracker):
   """
   return macro-avg metrics
   """
-  motas, motps, idf1s, track_time, device, _ = evaluate_sequence(model_path, conf, iou, imgsz, tracker)
+  motas, motps, idf1s, hotas, track_time, device, _ = evaluate_sequence(model_path, conf, iou, imgsz, tracker)
 
   macro_mota = round(np.mean(motas), 2)
   macro_motp = round(np.mean(motps), 2)
@@ -174,7 +175,6 @@ def track(model_path, video_path, conf, iou, imgsz, tracker):
   )
 
   return results
-  
 
 def extract_tracks(results):
   """
