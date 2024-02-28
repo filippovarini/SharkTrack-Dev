@@ -9,12 +9,13 @@ project = '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/models/p2
 custom_botsort_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/trackers/custom_botsort.yaml'
 
 # Hyperparameter tuning
-tracker_types = ['botsort', 'bytesort']
+# tracker_types = ['botsort', 'bytesort']
+tracker_types = ['bytetrack']
 track_high_threshs = [0.2, 0.4, 0.6, 0.8]
 track_low_threshs = [0.1, 0.2, 0.4, 0.6]
 new_track_threshs = [0.2, 0.4, 0.6, 0.8]
 track_buffers = [1, 2, 3, 4, 10]
-match_threshs = [0.2, 0.4, 0.6, 0.8]
+match_threshs = [0.6, 0.8, 0.9, 0.95]
 
 #  dataframe columns: 'tracker_type', 'track_high_thresh', 'track_low_thresh', 'new_track_thresh', 'track_buffer', 'match_thresh', 'mota', 'motp', 'idf1', 'hota
 
