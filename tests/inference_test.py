@@ -53,6 +53,7 @@ def track_folder_videos(params):
 
 
 def save_to_csv(params):
+  # now test at 11m speed
   csv_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/dev/SharkTrack-Dev/tests/model_speeds.csv'
   columns = ['device', 'fps', 'size', 'tracked', 'imgsz', 'time']
 
@@ -66,9 +67,9 @@ def save_to_csv(params):
 
 
 def main():
-  video_to_test = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/sp/videos/sp_palau4.mp4'
+  video_to_test = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/videos_raw/mwitt/AXA_APR23_no_streams/AXA_2023-0011704/LGX010079.mp4'
 
-  device = ['cpu', 'cuda']
+  device = ['cpu', '0']
   fps = [0.5, 1, 2, 5]
   size = ['n', 's', 'm']
   tracked = [True, False]

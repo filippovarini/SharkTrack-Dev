@@ -11,12 +11,12 @@ sys.path.append(str(root_dir))
 from trackers.utils import get_sorted_sequence
 
 class YoloTracker:
-  def __init__(self, model_path, tracker) -> None:
+  def __init__(self, model_path, tracker_type) -> None:
     self.model_path = model_path
-    self.tracker = tracker
+    self.tracker = tracker_type
 
-  def track(self, sequence_path, conf_threshold, iou_association_threshold, imgsz, tracker) -> Tuple[List, float]:
-      mode = 'track' if tracker else 'detect'
+  def track(self, sequence_path, conf_threshold, iou_association_threshold, imgsz) -> Tuple[List, float]:
+      mode = 'track' if self.tracker else 'detect'
       print(f'Running {mode} mode...')
       frames = get_sorted_sequence(sequence_path)
 
@@ -37,13 +37,14 @@ class YoloTracker:
           frame_path = os.path.join(sequence_path, frame)
 
           if mode == 'track':
+              tracker_file = self.tracker if 'yaml' in self.tracker else f'{self.tracker}.yaml'
               results = model.track(
                   frame_path,
                   persist=True,
                   conf=conf_threshold,
                   iou=iou_association_threshold,
                   imgsz=imgsz,
-                  tracker=tracker,
+                  tracker=tracker_file,
                   verbose=False
               )
               tracks = results[0].boxes.id
