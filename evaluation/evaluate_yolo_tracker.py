@@ -16,6 +16,7 @@ from trackers.sort_adapter import Sort_adapter
 
 
 sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
+sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/val1/frames_1fps'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
@@ -23,16 +24,16 @@ VAL_SEQUENCES = [
   'val1_easy2',
   'val1_medium1',
   'val1_medium2',
-  'sp_natgeo2',
+  # 'sp_natgeo2',
   # 'gfp_hawaii1',
-  'shlife_scalloped4',
+  # 'shlife_scalloped4',
   # 'gfp_fiji1',
-  'shlife_smooth2',
+  # 'shlife_smooth2',
   # 'gfp_niue1',
   # 'gfp_solomon1',
   # 'gfp_montserrat1',
   # 'gfp_rand3',
-  'shlife_bull4'
+  # 'shlife_bull4'
 ]
 tracker_class = {
   'botsort': YoloTracker,
