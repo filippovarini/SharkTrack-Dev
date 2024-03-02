@@ -118,7 +118,6 @@ def target2pred_align(annotations, track_predictions, sequence_path, tracker):
     return results    
 
 
-
 def align_annotations_with_predictions_dict_corrected(annotations, track_predictions, video_length):
     """
     Correctly aligns ground truth annotations with predicted data from an object tracking model.

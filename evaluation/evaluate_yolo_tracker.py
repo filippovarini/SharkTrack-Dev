@@ -1,5 +1,3 @@
-from utils import target2pred_align, get_torch_device, plot_performance_graph, extract_frame_number, save_trackeval_annotations
-from TrackEval.scripts.run_mot_challenge_functional import run_mot_challenge
 from ultralytics import YOLO
 import pandas as pd
 import numpy as np
@@ -13,10 +11,12 @@ root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
 from trackers.yolo import YoloTracker
 from trackers.sort_adapter import Sort_adapter
+from evaluation.utils import target2pred_align, get_torch_device, plot_performance_graph, extract_frame_number, save_trackeval_annotations
+from evaluation.TrackEval.scripts.run_mot_challenge_functional import run_mot_challenge
 
 
 sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/phase2'
-sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/val1/frames_1fps'
+sequences_path = '/vol/biomedic3/bglocker/ugproj2324/fv220/datasets/frame_extraction_raw/val1/frames_5fps'
 VAL_SEQUENCES = [
   'val1_difficult1',
   'val1_difficult2',
@@ -75,7 +75,8 @@ def evaluate_sequence(model_path, conf_threshold, iou_association_threshold, img
     annotations = pd.read_csv(annotations_path)
 
     print(f"Evaluating {sequence}")
-    tracker = tracker_class[tracker_type](model_path, tracker_type)
+    tracker_obj = tracker_class.get(tracker_type, YoloTracker) # default to YoloTracker for custom trackers
+    tracker = tracker_obj(model_path, tracker_type)
     results, time = tracker.track(sequence_path, conf_threshold, iou_association_threshold, imgsz) # [bbox_xyxys, confidences, track_ids]
     track_time += time
 
