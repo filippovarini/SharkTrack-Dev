@@ -1,8 +1,10 @@
+#%% Cell1
 from ultralytics import YOLO
 import cv2
 
+#%% Cell2
 class Model():
-  def __init__(self, mobile):
+  def __init__(self, mobile=False):
     """
     Args:
       mobile (bool): Whether to use lightweight model developed to run quickly on CPU
@@ -51,22 +53,33 @@ class Model():
       imgsz=self.imgsz,
       tracker=self.tracker_path,
       vid_stride=self._get_frame_skip(video_path),
-      device=self.self.device,
+      device=self.device,
       verbose=False,
     )
 
+    return results
+
 
   def run(self, videos_folder, stereo=False):
-    processed_chapters = 0
-    for video in os.listdir(base_folder):
-      if os.path.isdir(video):
-        for chapter in os.listdir(video):
+    all_results = {}
+
+    for video in os.listdir(videos_folder):
+      video_path = os.path.join(videos_folder, video)
+      if os.path.isdir(video_path):
+        for chapter in os.listdir(video_path):
           stereo_filter = not stereo or 'LGX' in chapter # pick only left camera
-          if chapter.endswith('.mp4') and stereo_filter:
-            chapter_path = os.path.join(videos_folder, video, chapter)
-            self.track(chapter_path)
+          custom_filter = 'difficult1' in chapter #TODO: remove
+          if chapter.endswith('.mp4') and stereo_filter and custom_filter:
+            chapter_id = os.path.join(video, chapter)
+            chapter_path = os.path.join(videos_folder, chapter_id)
+            chapter_results = self.track(chapter_path)
+            all_results[chapter_id] = chapter_results
     
-    if processed_chapters == 0:
+    return all_results
+
+
+    
+    if len(all_results) == 0:
       print('No chapters found in the given folder')
       print('Please ensure the folder structure resembles the following:')
       print('videos_folder')
@@ -83,6 +96,7 @@ class Model():
     # 2. From the results construct VIAME
     return self.results
 
+#%% Cell3
 def main():
   # 1. Run tracker with configs
   # 2. From the results construct VIAME
