@@ -4,7 +4,11 @@ import os
 
 SHARKTRACK_COLUMNS = ['filename', 'class', 'ymin', 'xmin', 'xmax', 'ymax', 'source', 'track_id', 'frame_id']
 
-def viame2standard(csv_path, source, annotations_fps, is_video):
+def categorise_species(species):
+  # TODO: filter out behaviours
+  return 'shark or ray'
+
+def viame2standard(csv_path, source, download_dir, annotations_fps, is_video):
     assert annotations_fps in [1,10], "Only 1 or 10 fps are supported"
     # Load the CSV file
 
